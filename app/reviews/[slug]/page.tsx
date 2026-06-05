@@ -51,6 +51,8 @@ export default async function SingleReviewPage({ params }: { params: { slug: str
     authorId: data.author_id,
     createdAt: new Date(data.created_at).getTime(),
     updatedAt: new Date(data.updated_at).getTime(),
+    metaTitle: data.meta_title || "",
+    metaDescription: data.meta_description || "",
   };
 
   // JSON-LD Product Schema
