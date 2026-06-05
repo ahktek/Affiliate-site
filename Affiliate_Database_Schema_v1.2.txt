@@ -1,0 +1,959 @@
+DATABASE SCHEMA DOCUMENT
+AI Tools Affiliate Review Platform
+Supabase / PostgreSQL  •  Version 1.2  •  May 2026
+Provider
+Supabase + PostgreSQL 15
+Tables
+12 core (comments deferred)
+Auth
+Supabase Auth (JWT)
+Storage
+3 Supabase buckets
+Legend & Conventions
+Column names use snake_case. Every table has id (uuid, primary key, default gen_random_uuid()). All timestamps are timestamptz and default to now(). Foreign keys are named <table>_id and carry ON DELETE CASCADE unless noted otherwise.
+Symbol / Value
+Meaning
+PK
+Primary key
+FK → table.col
+Foreign key reference
+Null? = N
+NOT NULL constraint
+Null? = Y
+Column is nullable
+jsonb
+Binary JSON — indexable, faster than json
+text[]
+PostgreSQL text array
+check(...)
+PostgreSQL CHECK constraint enforced at DB level
+👤  1. profiles
+Extends Supabase auth.users — one row per authenticated user
+Why 'profiles'?
+Supabase manages auth.users internally. Never store extra columns there. Create a public.profiles table linked 1-to-1 via id = auth.users.id and a trigger to auto-insert on signup.
+Column
+Type
+Null?
+Default / FK
+Notes
+id
+uuid
+N
+references auth.users
+PK + FK → auth.users.id (1-to-1)
+full_name
+text
+Y
+—
+Display name
+email
+text
+N
+—
+Unique; mirrors auth.users.email
+role
+text
+N
+'editor'
+check(role IN ('admin','editor'))
+avatar_url
+text
+Y
+—
+Supabase Storage public URL
+bio
+text
+Y
+—
+Short author bio shown on posts
+created_at
+timestamptz
+N
+now()
+Set by trigger on auth.users insert
+updated_at
+timestamptz
+N
+now()
+Update trigger on row change
+Trigger (create on auth.users insert):
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer as $$
+begin
+  insert into public.profiles(id, email)
+  values (new.id, new.email);
+  return new;
+end; $$;
+🗂️  2. categories
+Content taxonomy — posts and products both reference this table
+Column
+Type
+Null?
+Default / FK
+Notes
+id
+uuid
+N
+gen_random_uuid()
+PK
+name
+text
+N
+—
+Unique display name
+slug
+text
+N
+—
+Unique; URL-safe; indexed
+description
+text
+Y
+—
+Shown on category landing page
+seo_title
+text
+Y
+—
+Overrides <title> tag
+seo_description
+text
+Y
+—
+Meta description (≤160 chars)
+cover_image_url
+text
+Y
+—
+Hero image for category page
+created_at
+timestamptz
+N
+now()
+📝  3. posts
+Blog articles — the primary SEO content unit
+Column
+Type
+Null?
+Default / FK
+Notes
+id
+uuid
+N
+gen_random_uuid()
+PK
+title
+text
+N
+—
+H1; required
+slug
+text
+N
+—
+Unique; indexed; URL-safe
+excerpt
+text
+Y
+—
+Card/meta fallback (≤160 chars)
+content
+text
+N
+—
+HTML from TipTap rich text editor
+featured_image_url
+text
+Y
+—
+From post-images bucket
+featured_image_alt
+text
+Y
+—
+Required before publish (enforced in app)
+seo_title
+text
+Y
+—
+Overrides <title>; ≤60 chars
+seo_description
+text
+Y
+—
+Meta description; ≤160 chars
+status
+text
+N
+'draft'
+check(status IN ('draft','scheduled','published'))
+published_at
+timestamptz
+Y
+—
+Null until published or scheduled
+category_id
+uuid
+Y
+FK → categories.id ON DELETE SET NULL
+Nullable to avoid orphaned posts
+author_id
+uuid
+Y
+FK → profiles.id ON DELETE SET NULL
+Nullable: keeps post if author deleted
+reading_time
+integer
+Y
+—
+Minutes; computed and stored on save
+schema_type
+text
+Y
+'Article'
+JSON-LD type: Article | Review | HowTo
+tags
+text[]
+Y
+'{}'::text[]
+e.g. {"ai-writing","copyai"}; used for related posts + filtering
+created_at
+timestamptz
+N
+now()
+updated_at
+timestamptz
+N
+now()
+Update trigger
+🔧 v1.2 Fix
+tags text[] added to fulfil PRD requirements: 'Filter by tag' on category pages, 'Related posts by tag', and n8n auto-tagging on content import. Index: GIN(tags) for fast array lookups.
+RLS note
+Public SELECT allowed only where status = 'published'. Admins and editors can SELECT all rows; only admins can DELETE.
+🛍️  4. products
+AI tool / SaaS product entries — each maps to a review page
+Column
+Type
+Null?
+Default / FK
+Notes
+id
+uuid
+N
+gen_random_uuid()
+PK
+name
+text
+N
+—
+Product display name; unique
+slug
+text
+N
+—
+Unique; indexed
+tagline
+text
+Y
+—
+One-line description for cards
+short_description
+text
+Y
+—
+≤300 chars; used in comparison tables
+full_review
+text
+Y
+—
+HTML from rich text editor
+pros
+jsonb
+Y
+'[]'::jsonb
+Array of strings: ["Fast","Generous free tier"]
+cons
+jsonb
+Y
+'[]'::jsonb
+Array of strings
+rating
+numeric(3,1)
+Y
+—
+check(rating >= 1 AND rating <= 5)
+affiliate_url
+text
+Y
+—
+Raw affiliate link (not shown directly to users)
+pricing_summary
+text
+Y
+—
+e.g. Free / $29/mo / Contact sales
+pricing_url
+text
+Y
+—
+Link to product pricing page
+featured_image_url
+text
+Y
+—
+Product logo / hero image
+category_id
+uuid
+Y
+FK → categories.id ON DELETE SET NULL
+is_featured
+boolean
+N
+false
+Surfaces on homepage featured block
+tags
+text[]
+Y
+'{}'::text[]
+e.g. {"ai-writing","seo-tools"}; used for filtering + related products
+created_at
+timestamptz
+N
+now()
+updated_at
+timestamptz
+N
+now()
+Map to PRD 'last_updated' freshness signal on review pages
+🔧 v1.2 Fixes
+1. tags text[] added — fulfils PRD 'filter by tag' and n8n auto-tagging automation. Add GIN index (idx_products_tags) for performant array queries.
+2. updated_at freshness — confirm your frontend renders this field directly as the visible 'Last updated: May 2026' label on review pages and in the Review schema JSON-LD lastReviewed property.
+❓  5. faqs
+FAQs attached to products — rendered with FAQ schema markup
+Column
+Type
+Null?
+Default / FK
+Notes
+id
+uuid
+N
+gen_random_uuid()
+PK
+product_id
+uuid
+N
+FK → products.id ON DELETE CASCADE
+Required; FK
+question
+text
+N
+—
+answer
+text
+N
+—
+HTML allowed
+sort_order
+integer
+N
+0
+Controls display order on page
+created_at
+timestamptz
+N
+now()
+⚖️  6. comparisons
+Side-by-side product comparison pages
+Column
+Type
+Null?
+Default / FK
+Notes
+id
+uuid
+N
+gen_random_uuid()
+PK
+title
+text
+N
+—
+e.g. Jasper AI vs Copy.ai
+slug
+text
+N
+—
+Unique; indexed
+description
+text
+Y
+—
+Intro paragraph for the page
+product_ids
+uuid[]
+N
+—
+Array of 2–4 product UUIDs
+table_data
+jsonb
+Y
+—
+Dynamic feature rows: [{feature, values[]}]
+seo_title
+text
+Y
+—
+seo_description
+text
+Y
+—
+status
+text
+N
+'draft'
+check(status IN ('draft','published'))
+created_at
+timestamptz
+N
+now()
+updated_at
+timestamptz
+N
+now()
+Update trigger
+product_ids design
+Using uuid[] instead of a join table keeps comparisons simple for a 2–4 product scenario. If you later need many-to-many metadata per product-comparison pair, migrate to a comparison_products join table.
+📧  7. newsletter_subscribers
+Email list — double opt-in flow via Brevo / MailerLite
+Column
+Type
+Null?
+Default / FK
+Notes
+id
+uuid
+N
+gen_random_uuid()
+PK
+email
+text
+N
+—
+Unique; lowercase; indexed
+status
+text
+N
+'pending'
+check(status IN ('pending','confirmed','unsubscribed'))
+source
+text
+Y
+—
+e.g. 'homepage_popup', 'post_inline'
+confirmed_at
+timestamptz
+Y
+—
+Set when double opt-in confirmed
+unsubscribed_at
+timestamptz
+Y
+—
+Set on unsubscribe
+created_at
+timestamptz
+N
+now()
+💬  8. comments
+⏸ DEFERRED to Phase 3 — do NOT run this migration for MVP
+🔧 v1.2 Fix — Deferred
+The PRD classifies comments as Phase 3 (Scale) and lists the comment system as an Open Question ('Native vs Disqus vs none for MVP'). Building and maintaining native comment moderation, spam filtering, and RLS policies is unnecessary overhead for Phase 1. Skip this migration entirely at launch. Revisit in Phase 3, or adopt Disqus / a third-party widget to avoid the operational cost.
+Schema preserved below for future reference only. Do not migrate until Phase 3 decision is made.
+Column
+Type
+Null?
+Default / FK
+Notes
+id
+uuid
+N
+gen_random_uuid()
+PK
+post_id
+uuid
+N
+FK → posts.id ON DELETE CASCADE
+Required FK
+user_name
+text
+N
+—
+user_email
+text
+N
+—
+Not shown publicly; for spam filtering
+content
+text
+N
+—
+Plain text; sanitized before insert
+status
+text
+N
+'pending'
+check(status IN ('pending','approved','spam'))
+parent_id
+uuid
+Y
+FK → comments.id
+Null = top-level; non-null = reply
+created_at
+timestamptz
+N
+now()
+Moderation
+Default status = 'pending'. RLS: public can INSERT; public can SELECT only where status = 'approved'. Admins SELECT all and can UPDATE status.
+🖼️  9. media
+Tracks files uploaded to Supabase Storage buckets
+Column
+Type
+Null?
+Default / FK
+Notes
+id
+uuid
+N
+gen_random_uuid()
+PK
+file_name
+text
+N
+—
+Original filename
+storage_path
+text
+N
+—
+Bucket path e.g. post-images/uuid.webp
+public_url
+text
+N
+—
+CDN URL for use in content
+file_type
+text
+N
+—
+MIME type e.g. image/webp
+file_size
+integer
+Y
+—
+Bytes
+alt_text
+text
+Y
+—
+Default alt for accessibility
+uploaded_by
+uuid
+Y
+FK → profiles.id ON DELETE SET NULL
+created_at
+timestamptz
+N
+now()
+⚙️  10. settings
+Single-row site configuration — managed from admin dashboard
+Pattern
+Enforce single-row with a CHECK constraint: check(id = 1) with id integer PK. Seed one row on first deploy.
+Column
+Type
+Null?
+Default / FK
+Notes
+id
+integer
+N
+1
+PK; always 1 (single-row table)
+site_name
+text
+N
+—
+Used in <title> suffix and OG tags
+site_description
+text
+Y
+—
+Homepage meta description
+logo_url
+text
+Y
+—
+Header logo
+favicon_url
+text
+Y
+—
+Browser tab icon
+primary_color
+text
+Y
+—
+Hex color e.g. #1565C0 (CSS custom property)
+affiliate_disclosure
+text
+Y
+—
+Legal disclosure shown in footer
+social_links
+jsonb
+Y
+'{}'::jsonb
+{ twitter, linkedin, youtube, ... }
+updated_at
+timestamptz
+N
+now()
+🔗  11. affiliate_clicks
+NEW — tracks outbound affiliate link clicks for revenue attribution
+Why add this?
+Without click tracking you cannot calculate EPC (earnings per click), identify top-converting products, or detect click fraud. This table is the foundation for your internal analytics dashboard.
+Column
+Type
+Null?
+Default / FK
+Notes
+id
+uuid
+N
+gen_random_uuid()
+PK
+product_id
+uuid
+Y
+FK → products.id ON DELETE SET NULL
+Which product was clicked
+post_id
+uuid
+Y
+FK → posts.id ON DELETE SET NULL
+Which post drove the click
+affiliate_url
+text
+N
+—
+The destination URL
+referrer
+text
+Y
+—
+document.referrer from browser
+utm_source
+text
+Y
+—
+UTM tracking parameters
+utm_medium
+text
+Y
+—
+utm_campaign
+text
+Y
+—
+device_type
+text
+Y
+—
+desktop | mobile | tablet
+country_code
+text
+Y
+—
+2-letter ISO; from Vercel geo headers
+created_at
+timestamptz
+N
+now()
+Click timestamp
+📊  12. analytics_events
+Lightweight custom event log — supplement to GA4
+Scope
+Do not store personally identifiable information here. Store only anonymized behavioral signals (page views, scroll depth, CTA impressions) useful for content optimization.
+Column
+Type
+Null?
+Default / FK
+Notes
+id
+uuid
+N
+gen_random_uuid()
+PK
+event_name
+text
+N
+—
+e.g. page_view, cta_click, scroll_50
+page_url
+text
+N
+—
+Full pathname
+session_id
+text
+Y
+—
+Anonymous session UUID from cookie
+device_type
+text
+Y
+—
+desktop | mobile | tablet
+referrer
+text
+Y
+—
+Traffic source
+created_at
+timestamptz
+N
+now()
+Future Table Stubs
+Add these tables as the platform scales. Stubs are defined here so foreign key relationships can be planned in advance.
+Future Table
+Purpose / Key Columns
+memberships
+Paid tiers: user_id, plan (free|pro|agency), expires_at, stripe_customer_id
+saved_comparisons
+Bookmark comparisons: user_id, comparison_id, saved_at
+ai_chat_logs
+Chatbot history: session_id, messages (jsonb), product_ids[], created_at
+sponsored_posts
+Paid placements: post_id, sponsor_name, start_date, end_date, fee
+notifications
+In-app alerts: user_id, type, message, read_at, created_at
+product_votes
+Upvote/downvote: user_id, product_id, vote (+1/-1), created_at
+Entity Relationships
+Relationship
+Cardinality & FK
+profiles → posts
+1-to-many — posts.author_id → profiles.id
+categories → posts
+1-to-many — posts.category_id → categories.id
+categories → products
+1-to-many — products.category_id → categories.id
+products → faqs
+1-to-many — faqs.product_id → products.id (CASCADE)
+products → affiliate_clicks
+1-to-many — affiliate_clicks.product_id → products.id
+posts → affiliate_clicks
+1-to-many — affiliate_clicks.post_id → posts.id
+posts → comments
+1-to-many — comments.post_id → posts.id (CASCADE)
+comments → comments
+Self-referencing — comments.parent_id → comments.id (replies)
+profiles → media
+1-to-many — media.uploaded_by → profiles.id
+auth.users → profiles
+1-to-1 — profiles.id = auth.users.id (trigger on insert)
+Indexing Strategy
+Table
+Index Name
+Column(s)
+Reason
+posts
+idx_posts_slug
+slug
+Unique; every route lookup
+posts
+idx_posts_status_pub
+status, published_at
+Filter published + sort by date
+posts
+idx_posts_category
+category_id
+Category page queries
+posts
+idx_posts_tags
+tags (GIN)
+v1.2: Fast text[] tag filtering & related posts
+products
+idx_products_slug
+slug
+Unique; product page lookup
+products
+idx_products_rating
+rating DESC
+Sort by rating
+products
+idx_products_featured
+is_featured
+Homepage featured block
+products
+idx_products_tags
+tags (GIN)
+v1.2: Fast text[] tag filtering
+categories
+idx_categories_slug
+slug
+Unique; category page lookup
+newsletter_subscribers
+idx_subscribers_email
+email
+Unique; duplicate prevention
+newsletter_subscribers
+idx_subscribers_status
+status
+Filter confirmed list
+affiliate_clicks
+idx_clicks_product
+product_id
+Per-product click counts
+affiliate_clicks
+idx_clicks_created
+created_at DESC
+Recent click analytics
+comparisons
+idx_comparisons_slug
+slug
+Unique; comparison page lookup
+Row-Level Security (RLS) Policies
+Enable RLS on every table. Default: deny all. Grant explicitly per role.
+Table
+Operation
+Role
+Policy Logic
+posts
+SELECT
+public (anon)
+status = 'published'
+posts
+SELECT
+authenticated
+auth.uid() IS NOT NULL (all rows)
+posts
+INSERT
+editor, admin
+profiles.role IN ('editor','admin')
+posts
+UPDATE
+editor, admin
+profiles.role IN ('editor','admin')
+posts
+DELETE
+admin only
+profiles.role = 'admin'
+products
+SELECT
+public
+true (all products public)
+products
+ALL
+admin only
+profiles.role = 'admin'
+categories
+SELECT
+public
+true
+categories
+ALL
+admin only
+profiles.role = 'admin'
+comparisons
+SELECT
+public
+status = 'published'
+comparisons
+ALL
+admin only
+profiles.role = 'admin'
+newsletter_subscribers
+INSERT
+public
+email IS NOT NULL AND status='pending'
+newsletter_subscribers
+SELECT
+admin only
+profiles.role = 'admin'
+affiliate_clicks
+INSERT
+public
+true (logged by API route, not client)
+affiliate_clicks
+SELECT
+admin only
+profiles.role = 'admin'
+comments
+INSERT
+public
+true (status defaults to pending)
+comments
+SELECT
+public
+status = 'approved'
+comments
+UPDATE
+admin only
+profiles.role = 'admin'
+settings
+SELECT
+public
+true
+settings
+UPDATE
+admin only
+profiles.role = 'admin'
+media
+SELECT
+public
+true
+media
+INSERT
+editor, admin
+profiles.role IN ('editor','admin')
+media
+DELETE
+admin only
+profiles.role = 'admin'
+Supabase Storage Buckets
+Bucket Name
+Purpose & Access
+post-images
+Blog featured images. Public read. Authenticated write (editor+). WebP preferred.
+product-images
+Product logos and screenshots. Public read. Admin write only.
+media-library
+General media library. Public read. Authenticated write. Max file size: 5MB.
+Environment Variables
+Security
+SUPABASE_SERVICE_ROLE_KEY has full DB access and bypasses RLS. Never expose it to the browser. Use only in server-side API routes or n8n automation.
+Variable
+Used In
+VITE_SUPABASE_URL
+Frontend (public) — Supabase project URL
+VITE_SUPABASE_ANON_KEY
+Frontend (public) — respects RLS policies
+SUPABASE_SERVICE_ROLE_KEY
+Server-only (n8n, API routes) — bypasses RLS
+OPENAI_API_KEY
+Server-only — AI content generation + chatbot
+BREVO_API_KEY
+Server-only — email automation
+Recommended Setup Workflow
+Follow this sequence to avoid relationship or RLS conflicts:
+Create Supabase project and note URL + keys
+Run table migrations in order: profiles → categories → posts → products → faqs → all others
+Add foreign key constraints after all tables exist
+Enable RLS on every table; add policies from the table above
+Create auth trigger to auto-insert profiles row
+Create storage buckets and set per-bucket policies
+Add indexes from the Indexing Strategy table
+Seed settings table row (id = 1) with site defaults
+Connect frontend with VITE_ env vars; test CRUD + RLS with Supabase Studio
+AI Tools Affiliate Review Platform • Database Schema v1.2 • May 2026 • Confidential

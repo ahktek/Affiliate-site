@@ -1,0 +1,299 @@
+PRODUCT REQUIREMENTS DOCUMENT
+AI Tools Affiliate Review Platform
+Version 1.1  •  May 2026
+Confidential — Internal Use Only
+Product Type
+React SaaS + Affiliate Blog
+Tech Stack
+React, TypeScript, Supabase, Vercel
+MVP Deadline
+Phase 1 within 8 weeks
+Revenue Model
+Affiliate + Ads + Email
+1. Executive Summary
+This PRD defines the requirements for building a modern, AI-powered affiliate review platform that generates recurring passive income through SEO-driven content. The platform mimics the effectiveness of a top-tier WordPress affiliate blog while leveraging a modern React/TypeScript/Supabase architecture for performance, scalability, and developer velocity.
+The platform will publish expert reviews of AI tools and SaaS products, rank on Google for high-intent buyer keywords, capture email subscribers, and monetize through affiliate commissions, sponsored placements, and display advertising.
+Vision
+Become a recognized, SEO-authoritative affiliate media brand in the AI tools niche — generating $5,000+/month in recurring affiliate revenue within 18–24 months.
+2. Business Goals & Success Metrics
+2.1 Primary Goals
+Affiliate Revenue — earn commissions from AI tools, SaaS, hosting, VPNs, and marketing software
+Organic SEO Traffic — rank for commercial-intent keywords on Google via long-form review and comparison content
+Email List Building — capture subscribers for newsletters, product launches, and affiliate promotions
+Content Velocity — publish and update content rapidly via a CMS-like admin dashboard
+2.2 Success Metrics
+Metric
+Month 3 Target
+Month 12 Target
+Long-Term Target
+Daily Visitors
+100+
+1,000+
+10,000+
+Monthly Revenue
+$100
+$1,000
+$5,000+
+Email Subscribers
+200
+2,000
+20,000+
+Published Articles
+20
+100
+500+
+Avg. Lighthouse Score
+90+
+90+
+90+
+3. Target Audience
+3.1 Primary Readers (Buyers)
+Digital marketers looking for AI-powered workflow tools
+YouTubers and content creators evaluating video/editing software
+Freelancers comparing SaaS productivity platforms
+Affiliate marketers researching tools for their own businesses
+Small business owners exploring AI automation tools
+3.2 Secondary Readers
+SEO professionals and bloggers benchmarking tool performance
+Students and startup founders on tight budgets seeking value comparisons
+3.3 Search Intent Targeting
+Intent Type
+Example Query
+Content Type
+Informational
+What is Jasper AI?
+Blog post / explainer
+Comparative
+Jasper AI vs Copy.ai
+Comparison page
+Transactional
+Best AI writing tools 2026
+Listicle review
+Navigational
+Jasper AI review
+Product review page
+4. Technology Stack
+Layer
+Technology & Rationale
+Frontend
+React 18 + TypeScript — type-safe, component-driven UI
+Styling
+Tailwind CSS — utility-first, mobile-first, fast iteration
+Backend / Database
+Supabase (PostgreSQL + Auth + Storage) — scalable BaaS
+Hosting & CDN
+Vercel — edge network, CI/CD from GitHub, fast global delivery
+CMS
+Custom React admin dashboard (no third-party CMS dependency)
+Rich Text Editor
+TipTap — extensible, headless, Markdown-compatible
+Email / CRM
+Brevo or MailerLite — subscriber segmentation + broadcast emails
+Automation
+n8n (self-hosted) — Google Drive → Supabase content pipeline
+AI Integration
+OpenAI API — content suggestions, AI chatbot, meta generation
+Analytics
+Google Analytics 4 + Search Console + Microsoft Clarity
+5. Core Features
+5.1 Homepage
+Hero section with primary value proposition and CTA
+Featured / trending product reviews (dynamic, pulled from DB)
+Latest blog posts grid
+Popular categories navigation
+Inline newsletter opt-in form
+Footer with sitemap links, social icons, affiliate disclosure
+5.2 Blog System
+Dynamic slug-based blog post pages (/blog/[slug])
+SEO metadata: title, description, canonical, Open Graph, Twitter Card
+Rich text content with H1/H2/H3 hierarchy
+Featured image with alt text and lazy loading
+Related posts (by tag or category)
+Internal linking suggestions in admin panel
+Author bio block
+5.3 Product Review Pages
+Star rating system (1–5) stored in DB, displayed with schema markup
+Pros & cons structured list
+Affiliate CTA buttons (sticky on scroll, tracked with UTM params)
+Expandable FAQ section with FAQ schema
+Pricing table or summary
+Related reviews sidebar
+Last-updated timestamp for freshness signals
+5.4 Comparison Engine
+Side-by-side responsive comparison tables (2–4 products)
+Dynamic data pulled from product records in Supabase
+Sticky CTA buttons per column
+Mobile-optimized scrollable layout
+Comparison schema markup
+5.5 Category System
+SEO-optimized category landing pages (/category/[slug])
+Article pagination (12 per page)
+Filter by rating, date, or tag
+Category description area for SEO copy
+5.6 Newsletter System
+Inline opt-in forms (homepage, blog sidebar, end of posts)
+Exit-intent popup with delayed trigger
+Double opt-in flow via Brevo/MailerLite API
+Subscriber export from admin dashboard
+Welcome email automation sequence
+5.7 Admin Dashboard
+Sidebar navigation: Posts | Products | Categories | Newsletter | Analytics
+Post management: create, edit, publish, draft, schedule, delete
+Product management: add tools, update ratings, manage affiliate links
+Category management: slug, SEO meta, description
+Newsletter subscriber list view + CSV export
+Basic traffic overview (page views, top posts, top sources)
+5.8 AI Chatbot (Phase 2)
+Product recommendation assistant on homepage/review pages
+Powered by OpenAI API with product data from Supabase as context
+Affiliate link injection in chatbot recommendations
+6. User Roles & Permissions
+Role
+Capabilities
+Auth Level
+Admin
+Full access: publish, delete, manage users, view analytics, export data
+Supabase role: admin
+Editor
+Create and edit posts/products; cannot delete or manage users
+Supabase role: editor
+Visitor
+Read public content, subscribe to newsletter, use chatbot
+Unauthenticated / public
+7. SEO Requirements
+7.1 Technical SEO
+Auto-generated sitemap.xml (updated on publish)
+robots.txt with crawl rules
+Canonical URLs on all pages
+Open Graph + Twitter Card metadata on every page
+Structured data: Article, Review, Product, FAQ, BreadcrumbList schemas
+Core Web Vitals optimized: LCP < 2.5s, CLS < 0.1, FID < 100ms
+7.2 Content SEO
+Single H1 per page containing primary keyword
+H2/H3 hierarchy for sub-topics and FAQ
+Internal links: minimum 3 per article, automated suggestions in editor
+Image alt text field required before publish
+Estimated reading time displayed on posts
+Last-updated date visible and in schema
+8. Performance & Security
+8.1 Performance Targets
+Metric
+Target
+Lighthouse Score (Desktop)
+90+ across all categories
+Lighthouse Score (Mobile)
+85+ across all categories
+Initial Page Load (LCP)
+< 2.5 seconds
+Time to First Byte (TTFB)
+< 600ms (Vercel edge)
+Image Format
+WebP with lazy loading + blur placeholder
+JS Bundle
+Code-split per route; no blocking scripts
+8.2 Security Requirements
+Protected admin routes: server-side Supabase session check
+Supabase Row-Level Security (RLS) policies on all tables
+Environment variables for all API keys — never exposed to client
+Input sanitization on all form fields (XSS protection)
+HTTPS enforced via Vercel
+Rate limiting on newsletter signup endpoint
+9. Automation Workflow
+Pipeline
+Google Drive → n8n webhook → AI processing (OpenAI) → Supabase insert → Auto-publish to website
+Automated Capabilities
+Import blog post drafts from Google Drive folders
+AI meta title + description generation on import
+Image upload and resizing via Supabase Storage
+Auto-assign category and tags based on content
+Schedule publish time with status: draft → scheduled → published
+10. Monetization Strategy
+Revenue Stream
+Description
+Priority
+Affiliate Commissions
+Primary: CPA/recurring commissions from SaaS tool referrals
+P1
+Email Marketing
+Promote affiliate launches and sponsored products to list
+P1
+Sponsored Posts
+Charge $200–$1,000 per sponsored review or placement
+P2
+Display Advertising
+Ezoic or Mediavine after reaching traffic threshold
+P2
+Premium Directory
+Paid tool listings in a curated AI tools directory
+P3
+11. Phased Delivery Roadmap
+Phase 1 — MVP (Weeks 1–8)
+Homepage with hero, featured reviews, newsletter form
+Blog system with full SEO metadata
+Product review page template
+Categories system with pagination
+Admin dashboard: posts, products, categories
+Supabase database + auth setup
+Vercel deployment + domain + sitemap
+Phase 2 — Growth (Weeks 9–16)
+Comparison engine (2–4 product tables)
+AI chatbot widget (OpenAI-powered)
+n8n automation pipeline for content import
+Analytics dashboard in admin
+Email popup + double opt-in flow
+Phase 3 — Scale
+Multi-author system with editor role
+AI content assistant in the editor
+Personalized recommendation engine
+Community features (comments, ratings from users)
+Premium AI tools directory with paid listings
+12. Core Database Schema (Supabase / PostgreSQL)
+posts
+id, slug, title, content, excerpt, featured_image, author_id, category_id, status (draft|scheduled|published), published_at, updated_at, seo_title, seo_description, schema_type
+products
+id, slug, name, tagline, rating (1–5), pros (jsonb), cons (jsonb), affiliate_url, pricing_summary, category_id, featured_image, last_updated
+categories
+id, slug, name, description, seo_title, seo_description, cover_image
+subscribers
+id, email, status (pending|confirmed|unsubscribed), source, subscribed_at
+users (Supabase Auth extended)
+id, role (admin|editor), display_name, avatar_url, bio
+13. UI/UX Guidelines
+Attribute
+Specification
+Design Aesthetic
+Modern SaaS — clean, minimal, trust-building
+Color Scheme
+Light mode default; dark mode toggle in Phase 2
+Typography
+Inter or Geist (system-safe), 16px base, 1.6 line-height
+Layout
+12-column grid; max content width 768px; sidebar at 1200px+
+Mobile-First
+All components designed at 375px first, scaled up
+CTA Buttons
+Sticky on review pages; high-contrast color; UTM-tracked
+Components
+Cards, accordions, comparison tables, star ratings, badges
+Accessibility
+WCAG 2.1 AA: color contrast, keyboard nav, ARIA labels
+14. Open Questions & Decisions
+Question
+Options
+Owner
+Email platform
+Brevo vs MailerLite
+Founder
+Affiliate network
+Impact.com vs ShareASale vs direct deals
+Founder
+Comment system
+Native (Supabase) vs Disqus vs none for MVP
+Dev
+AI chatbot scope
+Simple widget vs full recommendation engine
+Dev
+Monetization threshold
+When to apply for Mediavine / Ezoic
+Founder
+AI Tools Affiliate Review Platform • PRD v1.1 • May 2026 • Confidential

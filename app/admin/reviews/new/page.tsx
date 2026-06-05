@@ -1,0 +1,215 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase/config";
+import { useAuth } from "@/lib/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Editor from "@/components/admin/Editor";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+export default function NewReviewPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  
+  const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [content, setContent] = useState("");
+  const [excerpt, setExcerpt] = useState("");
+  const [category, setCategory] = useState("AI Tools");
+  const [status, setStatus] = useState<"draft" | "published">("draft");
+  
+  // Review specific
+  const [overallRating, setOverallRating] = useState("4.5");
+  const [performance, setPerformance] = useState("9");
+  const [value, setValue] = useState("8");
+  const [design, setDesign] = useState("9");
+  const [easeOfUse, setEaseOfUse] = useState("8");
+  const [prosText, setProsText] = useState("");
+  const [consText, setConsText] = useState("");
+  const [affiliateLabel, setAffiliateLabel] = useState("Check Price");
+  const [affiliateUrl, setAffiliateUrl] = useState("");
+
+  const generateSlug = (text: string) => {
+    return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+    if (!slug || slug === generateSlug(title)) {
+      setSlug(generateSlug(e.target.value));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setLoading(true);
+
+    try {
+      const pros = prosText.split("\n").filter(p => p.trim() !== "");
+      const cons = consText.split("\n").filter(c => c.trim() !== "");
+
+      const newReview = {
+        title,
+        slug,
+        content,
+        excerpt,
+        category,
+        overallRating: parseFloat(overallRating),
+        scores: {
+          performance: parseFloat(performance),
+          value: parseFloat(value),
+          design: parseFloat(design),
+          easeOfUse: parseFloat(easeOfUse),
+        },
+        pros,
+        cons,
+        ctaLinks: affiliateUrl ? [{ label: affiliateLabel, url: affiliateUrl }] : [],
+        compareWith: [],
+        status,
+        authorId: user.uid,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        metaTitle: title,
+        metaDescription: excerpt,
+      };
+
+      await addDoc(collection(db, "reviews"), newReview);
+      router.push("/admin/reviews");
+    } catch (error) {
+      console.error("Error creating review:", error);
+      alert("Failed to create review. See console.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-8 max-w-5xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Create New Review</h1>
+        <div className="space-x-4">
+          <Button variant="outline" onClick={() => router.back()}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? "Saving..." : "Save Review"}
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <div className="space-y-2">
+                <Label>Product Name</Label>
+                <Input value={title} onChange={handleTitleChange} required />
+              </div>
+              <div className="space-y-2">
+                <Label>Slug</Label>
+                <Input value={slug} onChange={(e) => setSlug(e.target.value)} required />
+              </div>
+              <div className="space-y-2 h-96">
+                <Label>Review Content</Label>
+                <Editor value={content} onChange={setContent} />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader><CardTitle>Pros & Cons (One per line)</CardTitle></CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Pros</Label>
+                <textarea 
+                  className="w-full h-32 p-2 border rounded-md dark:bg-zinc-900" 
+                  value={prosText} 
+                  onChange={(e) => setProsText(e.target.value)}
+                  placeholder="Fast performance\nEasy to use"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Cons</Label>
+                <textarea 
+                  className="w-full h-32 p-2 border rounded-md dark:bg-zinc-900" 
+                  value={consText} 
+                  onChange={(e) => setConsText(e.target.value)}
+                  placeholder="Expensive\nSteep learning curve"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <CardHeader><CardTitle>Scores & Rating</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Overall Rating (1-5)</Label>
+                <Input type="number" step="0.1" max="5" min="1" value={overallRating} onChange={(e) => setOverallRating(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
+                  <Label>Performance (1-10)</Label>
+                  <Input type="number" value={performance} onChange={(e) => setPerformance(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Value (1-10)</Label>
+                  <Input type="number" value={value} onChange={(e) => setValue(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Design (1-10)</Label>
+                  <Input type="number" value={design} onChange={(e) => setDesign(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Ease of Use (1-10)</Label>
+                  <Input type="number" value={easeOfUse} onChange={(e) => setEaseOfUse(e.target.value)} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Affiliate Link</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>CTA Label</Label>
+                <Input value={affiliateLabel} onChange={(e) => setAffiliateLabel(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Affiliate URL</Label>
+                <Input value={affiliateUrl} onChange={(e) => setAffiliateUrl(e.target.value)} placeholder="https://..." />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Publish Settings</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={status} onValueChange={(v: "draft" | "published") => setStatus(v)}>
+                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Input value={category} onChange={(e) => setCategory(e.target.value)} />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
