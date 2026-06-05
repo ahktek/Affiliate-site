@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { adminDb } from "@/lib/firebase/admin";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,22 +11,56 @@ export const revalidate = 3600;
 
 export default async function Home() {
   // Fetch featured reviews
-  const reviewsSnapshot = await adminDb.collection("reviews")
-    .where("status", "==", "published")
-    .orderBy("createdAt", "desc")
-    .limit(6)
-    .get();
+  const { data: reviewsData } = await supabase
+    .from("reviews")
+    .select("*, categories(name)")
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .limit(6);
   
-  const reviews = reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const reviews = (reviewsData || []).map((r: any) => ({
+    id: r.id,
+    title: r.title,
+    slug: r.slug,
+    content: r.content,
+    excerpt: r.excerpt,
+    featuredImage: r.featured_image,
+    category: r.categories?.name || "",
+    overallRating: Number(r.overall_rating) || 0,
+    scores: r.scores,
+    pros: r.pros,
+    cons: r.cons,
+    ctaLinks: r.cta_links,
+    compareWith: r.compare_with,
+    status: r.status,
+    authorId: r.author_id,
+    createdAt: new Date(r.created_at).getTime(),
+    updatedAt: new Date(r.updated_at).getTime(),
+  }));
 
   // Fetch recent posts
-  const postsSnapshot = await adminDb.collection("posts")
-    .where("status", "==", "published")
-    .orderBy("createdAt", "desc")
-    .limit(3)
-    .get();
+  const { data: postsData } = await supabase
+    .from("posts")
+    .select("*, categories(name)")
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .limit(3);
     
-  const posts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const posts = (postsData || []).map((p: any) => ({
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    content: p.content,
+    excerpt: p.excerpt,
+    featuredImage: p.featured_image,
+    category: p.categories?.name || "",
+    tags: p.tags,
+    status: p.status,
+    authorId: p.author_id,
+    createdAt: new Date(p.created_at).getTime(),
+    updatedAt: new Date(p.updated_at).getTime(),
+    views: p.views,
+  }));
 
   return (
     <div className="flex min-h-screen flex-col">

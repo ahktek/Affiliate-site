@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,8 +20,26 @@ export default function NewPostPage() {
   const [slug, setSlug] = useState("");
   const [content, setContent] = useState("");
   const [excerpt, setExcerpt] = useState("");
-  const [category, setCategory] = useState("AI Tools");
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [categoryId, setCategoryId] = useState("");
   const [status, setStatus] = useState<"draft" | "published">("draft");
+
+  useEffect(() => {
+    const fetchCats = async () => {
+      try {
+        const { data, error } = await supabase.from("categories").select("id, name");
+        if (error) throw error;
+        if (data) {
+          setCategories(data);
+          if (data.length > 0) setCategoryId(data[0].id);
+        }
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+
+    fetchCats();
+  }, []);
 
   const generateSlug = (text: string) => {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
@@ -46,22 +63,24 @@ export default function NewPostPage() {
         slug,
         content,
         excerpt,
-        category,
+        category_id: categoryId || null,
         tags: [],
         status,
-        authorId: user.uid,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        metaTitle: title,
-        metaDescription: excerpt,
-        views: 0
+        author_id: user.id,
+        views: 0,
+        meta_title: title,
+        meta_description: excerpt,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
-      await addDoc(collection(db, "posts"), newPost);
+      const { error } = await supabase.from("posts").insert(newPost);
+      if (error) throw error;
+      
       router.push("/admin/posts");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating post:", error);
-      alert("Failed to create post. See console.");
+      alert("Failed to create post: " + (error.message || error));
     } finally {
       setLoading(false);
     }
@@ -125,7 +144,14 @@ export default function NewPostPage() {
               </div>
               <div className="space-y-2">
                 <Label>Category</Label>
-                <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Category Name" />
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger><SelectValue placeholder="Select Category" /></SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>

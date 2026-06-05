@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { collection, query, orderBy, getDocs, deleteDoc, doc } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
+import { supabase } from "@/lib/supabase";
 import { Review } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,13 +19,36 @@ export default function ReviewsManager() {
   const fetchReviews = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
-      const reviewsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("*, categories(name)")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const mapped = (data || []).map((r: any) => ({
+        id: r.id,
+        title: r.title,
+        slug: r.slug,
+        content: r.content,
+        excerpt: r.excerpt || "",
+        featuredImage: r.featured_image || "",
+        category: r.categories?.name || "",
+        overallRating: Number(r.overall_rating) || 0,
+        scores: r.scores || { performance: 0, value: 0, design: 0, easeOfUse: 0 },
+        pros: r.pros || [],
+        cons: r.cons || [],
+        ctaLinks: r.cta_links || [],
+        compareWith: r.compare_with || [],
+        status: r.status as "draft" | "published",
+        authorId: r.author_id || "",
+        createdAt: new Date(r.created_at || Date.now()).getTime(),
+        updatedAt: new Date(r.updated_at || Date.now()).getTime(),
+        metaTitle: r.meta_title || "",
+        metaDescription: r.meta_description || "",
       })) as Review[];
-      setReviews(reviewsData);
+
+      setReviews(mapped);
     } catch (error) {
       console.error("Error fetching reviews:", error);
     } finally {
@@ -37,7 +59,8 @@ export default function ReviewsManager() {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this review?")) {
       try {
-        await deleteDoc(doc(db, "reviews", id));
+        const { error } = await supabase.from("reviews").delete().eq("id", id);
+        if (error) throw error;
         setReviews(reviews.filter(r => r.id !== id));
       } catch (error) {
         console.error("Error deleting review:", error);

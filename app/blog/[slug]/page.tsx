@@ -1,31 +1,52 @@
 import { notFound } from "next/navigation";
-import { adminDb } from "@/lib/firebase/admin";
+import { supabase } from "@/lib/supabase";
 import Script from "next/script";
 
 export const revalidate = 3600;
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const postsSnapshot = await adminDb.collection("posts").where("slug", "==", params.slug).limit(1).get();
+  const { data } = await supabase
+    .from("posts")
+    .select("title, meta_title, meta_description, excerpt")
+    .eq("slug", params.slug)
+    .maybeSingle();
   
-  if (postsSnapshot.empty) {
+  if (!data) {
     return { title: "Post Not Found" };
   }
   
-  const post = postsSnapshot.docs[0].data();
   return {
-    title: `${post.metaTitle || post.title} | AI Reviews`,
-    description: post.metaDescription || post.excerpt,
+    title: `${data.meta_title || data.title} | AI Reviews`,
+    description: data.meta_description || data.excerpt,
   };
 }
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const postsSnapshot = await adminDb.collection("posts").where("slug", "==", params.slug).limit(1).get();
+  const { data } = await supabase
+    .from("posts")
+    .select("*, categories(name)")
+    .eq("slug", params.slug)
+    .maybeSingle();
   
-  if (postsSnapshot.empty) {
+  if (!data) {
     notFound();
   }
   
-  const post = { id: postsSnapshot.docs[0].id, ...postsSnapshot.docs[0].data() } as any;
+  const post = {
+    id: data.id,
+    title: data.title,
+    slug: data.slug,
+    content: data.content,
+    excerpt: data.excerpt,
+    featuredImage: data.featured_image,
+    category: data.categories?.name || "",
+    tags: data.tags,
+    status: data.status,
+    authorId: data.author_id,
+    createdAt: new Date(data.created_at).getTime(),
+    updatedAt: new Date(data.updated_at).getTime(),
+    views: data.views,
+  };
 
   // JSON-LD structured data
   const jsonLd = {

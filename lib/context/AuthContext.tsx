@@ -1,9 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { User, onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../firebase/config";
+import { User } from "@supabase/supabase-js";
+import { supabase } from "../supabase";
 import { UserProfile } from "../../types";
 
 interface AuthContextType {
@@ -27,39 +26,83 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      
-      if (firebaseUser) {
-        // Fetch user profile from Firestore to get role
-        try {
-          const docRef = doc(db, "users", firebaseUser.uid);
-          const docSnap = await getDoc(docRef);
-          
-          if (docSnap.exists()) {
-            setUserProfile(docSnap.data() as UserProfile);
-          } else {
-            // New user, you might want to create a profile here
-            setUserProfile(null);
-          }
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
-          setUserProfile(null);
-        }
+  const fetchProfile = async (uid: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", uid)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error fetching user profile:", error.message);
+        setUserProfile(null);
+        return;
+      }
+
+      if (data) {
+        setUserProfile({
+          id: data.id,
+          email: data.email || "",
+          displayName: data.display_name || "",
+          role: data.role as "admin" | "user", // support roles casted
+          createdAt: new Date(data.created_at).getTime(),
+        });
       } else {
         setUserProfile(null);
       }
+    } catch (err) {
+      console.error("Exception fetching profile:", err);
+      setUserProfile(null);
+    }
+  };
+
+  useEffect(() => {
+    // 1. Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        if (currentUser) {
+          await fetchProfile(currentUser.id);
+        } else {
+          setUserProfile(null);
+        }
+      } catch (err) {
+        console.error("Error checking initial auth session:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getInitialSession();
+
+    // 2. Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setLoading(true);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
       
+      if (currentUser) {
+        await fetchProfile(currentUser.id);
+      } else {
+        setUserProfile(null);
+      }
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const logout = async () => {
     try {
-      await signOut(auth);
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setUser(null);
+      setUserProfile(null);
     } catch (error) {
       console.error("Logout error", error);
     }

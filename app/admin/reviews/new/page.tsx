@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +20,8 @@ export default function NewReviewPage() {
   const [slug, setSlug] = useState("");
   const [content, setContent] = useState("");
   const [excerpt, setExcerpt] = useState("");
-  const [category, setCategory] = useState("AI Tools");
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [categoryId, setCategoryId] = useState("");
   const [status, setStatus] = useState<"draft" | "published">("draft");
   
   // Review specific
@@ -34,6 +34,23 @@ export default function NewReviewPage() {
   const [consText, setConsText] = useState("");
   const [affiliateLabel, setAffiliateLabel] = useState("Check Price");
   const [affiliateUrl, setAffiliateUrl] = useState("");
+
+  useEffect(() => {
+    const fetchCats = async () => {
+      try {
+        const { data, error } = await supabase.from("categories").select("id, name");
+        if (error) throw error;
+        if (data) {
+          setCategories(data);
+          if (data.length > 0) setCategoryId(data[0].id);
+        }
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+
+    fetchCats();
+  }, []);
 
   const generateSlug = (text: string) => {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
@@ -52,16 +69,16 @@ export default function NewReviewPage() {
     setLoading(true);
 
     try {
-      const pros = prosText.split("\n").filter(p => p.trim() !== "");
-      const cons = consText.split("\n").filter(c => c.trim() !== "");
+      const pros = prosText.split("\n").map(p => p.trim()).filter(p => p !== "");
+      const cons = consText.split("\n").map(c => c.trim()).filter(c => c !== "");
 
       const newReview = {
         title,
         slug,
         content,
         excerpt,
-        category,
-        overallRating: parseFloat(overallRating),
+        category_id: categoryId || null,
+        overall_rating: parseFloat(overallRating),
         scores: {
           performance: parseFloat(performance),
           value: parseFloat(value),
@@ -70,21 +87,23 @@ export default function NewReviewPage() {
         },
         pros,
         cons,
-        ctaLinks: affiliateUrl ? [{ label: affiliateLabel, url: affiliateUrl }] : [],
-        compareWith: [],
+        cta_links: affiliateUrl ? [{ label: affiliateLabel, url: affiliateUrl }] : [],
+        compare_with: [],
         status,
-        authorId: user.uid,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        metaTitle: title,
-        metaDescription: excerpt,
+        author_id: user.id,
+        meta_title: title,
+        meta_description: excerpt,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
-      await addDoc(collection(db, "reviews"), newReview);
+      const { error } = await supabase.from("reviews").insert(newReview);
+      if (error) throw error;
+      
       router.push("/admin/reviews");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating review:", error);
-      alert("Failed to create review. See console.");
+      alert("Failed to create review: " + (error.message || error));
     } finally {
       setLoading(false);
     }
@@ -130,7 +149,7 @@ export default function NewReviewPage() {
                   className="w-full h-32 p-2 border rounded-md dark:bg-zinc-900" 
                   value={prosText} 
                   onChange={(e) => setProsText(e.target.value)}
-                  placeholder="Fast performance\nEasy to use"
+                  placeholder="Fast performance&#10;Easy to use"
                 />
               </div>
               <div className="space-y-2">
@@ -139,7 +158,7 @@ export default function NewReviewPage() {
                   className="w-full h-32 p-2 border rounded-md dark:bg-zinc-900" 
                   value={consText} 
                   onChange={(e) => setConsText(e.target.value)}
-                  placeholder="Expensive\nSteep learning curve"
+                  placeholder="Expensive&#10;Steep learning curve"
                 />
               </div>
             </CardContent>
@@ -204,7 +223,14 @@ export default function NewReviewPage() {
               </div>
               <div className="space-y-2">
                 <Label>Category</Label>
-                <Input value={category} onChange={(e) => setCategory(e.target.value)} />
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger><SelectValue placeholder="Select Category" /></SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>

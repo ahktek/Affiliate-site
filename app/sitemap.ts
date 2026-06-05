@@ -1,38 +1,34 @@
 import { MetadataRoute } from 'next';
-import { adminDb } from '@/lib/firebase/admin';
+import { supabase } from '@/lib/supabase';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://yourdomain.com'; // Change to actual domain
 
   // Fetch all published posts
-  const postsSnapshot = await adminDb.collection("posts")
-    .where("status", "==", "published")
-    .get();
+  const { data: postsData } = await supabase
+    .from("posts")
+    .select("slug, updated_at, created_at")
+    .eq("status", "published");
   
-  const posts = postsSnapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      url: `${baseUrl}/blog/${data.slug}`,
-      lastModified: new Date(data.updatedAt || data.createdAt),
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    };
-  });
+  const posts = (postsData || []).map(p => ({
+    url: `${baseUrl}/blog/${p.slug}`,
+    lastModified: new Date(p.updated_at || p.created_at),
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }));
 
   // Fetch all published reviews
-  const reviewsSnapshot = await adminDb.collection("reviews")
-    .where("status", "==", "published")
-    .get();
+  const { data: reviewsData } = await supabase
+    .from("reviews")
+    .select("slug, updated_at, created_at")
+    .eq("status", "published");
 
-  const reviews = reviewsSnapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      url: `${baseUrl}/reviews/${data.slug}`,
-      lastModified: new Date(data.updatedAt || data.createdAt),
-      changeFrequency: 'weekly' as const,
-      priority: 0.9,
-    };
-  });
+  const reviews = (reviewsData || []).map(r => ({
+    url: `${baseUrl}/reviews/${r.slug}`,
+    lastModified: new Date(r.updated_at || r.created_at),
+    changeFrequency: 'weekly' as const,
+    priority: 0.9,
+  }));
 
   return [
     {

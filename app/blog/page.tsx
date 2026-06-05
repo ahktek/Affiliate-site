@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { adminDb } from "@/lib/firebase/admin";
+import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const revalidate = 3600;
@@ -10,12 +10,27 @@ export const metadata = {
 };
 
 export default async function BlogListingPage() {
-  const postsSnapshot = await adminDb.collection("posts")
-    .where("status", "==", "published")
-    .orderBy("createdAt", "desc")
-    .get();
+  const { data } = await supabase
+    .from("posts")
+    .select("*, categories(name)")
+    .eq("status", "published")
+    .order("created_at", { ascending: false });
     
-  const posts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const posts = (data || []).map((p: any) => ({
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    content: p.content,
+    excerpt: p.excerpt,
+    featuredImage: p.featured_image,
+    category: p.categories?.name || "",
+    tags: p.tags,
+    status: p.status,
+    authorId: p.author_id,
+    createdAt: new Date(p.created_at).getTime(),
+    updatedAt: new Date(p.updated_at).getTime(),
+    views: p.views,
+  }));
 
   return (
     <div className="container mx-auto py-16 px-4">

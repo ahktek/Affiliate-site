@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { adminDb } from "@/lib/firebase/admin";
+import { supabase } from "@/lib/supabase";
 
 const resend = new Resend(process.env.RESEND_API_KEY || "");
 
@@ -8,28 +8,34 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const email = formData.get("email") as string;
-    const source = formData.get("source") as string || "homepage";
+    const source = (formData.get("source") as string) || "homepage";
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
     // Check if email already exists
-    const existing = await adminDb.collection("subscribers").where("email", "==", email).get();
+    const { data: existing } = await supabase
+      .from("subscribers")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
     
-    if (!existing.empty) {
+    if (existing) {
       // Redirect back with success (even if duplicate, don't leak info or just say success)
       return NextResponse.redirect(new URL("/?subscribed=true", req.url));
     }
 
-    // Save to Firestore
-    await adminDb.collection("subscribers").add({
+    // Save to Supabase
+    const { error } = await supabase.from("subscribers").insert({
       email,
       name: "", // Can capture name later if needed
       source,
       timestamp: Date.now(),
-      isVerified: false
+      is_verified: false
     });
+
+    if (error) throw error;
 
     // Send Welcome Email
     if (process.env.RESEND_API_KEY) {

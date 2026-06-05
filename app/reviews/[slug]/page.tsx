@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { adminDb } from "@/lib/firebase/admin";
+import { supabase } from "@/lib/supabase";
 import Script from "next/script";
 import Link from "next/link";
 import { Check, X, Star, ExternalLink, ArrowRight } from "lucide-react";
@@ -10,23 +10,48 @@ import { Progress } from "@/components/ui/progress";
 export const revalidate = 3600;
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const reviewsSnap = await adminDb.collection("reviews").where("slug", "==", params.slug).limit(1).get();
+  const { data } = await supabase
+    .from("reviews")
+    .select("title, meta_title, meta_description, excerpt")
+    .eq("slug", params.slug)
+    .maybeSingle();
   
-  if (reviewsSnap.empty) return { title: "Review Not Found" };
+  if (!data) return { title: "Review Not Found" };
   
-  const review = reviewsSnap.docs[0].data();
   return {
-    title: `${review.title} Review (${new Date().getFullYear()}) | AI Reviews`,
-    description: review.metaDescription || review.excerpt,
+    title: `${data.meta_title || data.title} Review (${new Date().getFullYear()}) | AI Reviews`,
+    description: data.meta_description || data.excerpt,
   };
 }
 
 export default async function SingleReviewPage({ params }: { params: { slug: string } }) {
-  const reviewsSnap = await adminDb.collection("reviews").where("slug", "==", params.slug).limit(1).get();
+  const { data } = await supabase
+    .from("reviews")
+    .select("*, categories(name)")
+    .eq("slug", params.slug)
+    .maybeSingle();
   
-  if (reviewsSnap.empty) notFound();
+  if (!data) notFound();
   
-  const review = { id: reviewsSnap.docs[0].id, ...reviewsSnap.docs[0].data() } as any;
+  const review = {
+    id: data.id,
+    title: data.title,
+    slug: data.slug,
+    content: data.content,
+    excerpt: data.excerpt,
+    featuredImage: data.featured_image,
+    category: data.categories?.name || "",
+    overallRating: Number(data.overall_rating) || 0,
+    scores: data.scores,
+    pros: data.pros,
+    cons: data.cons,
+    ctaLinks: data.cta_links,
+    compareWith: data.compare_with,
+    status: data.status,
+    authorId: data.author_id,
+    createdAt: new Date(data.created_at).getTime(),
+    updatedAt: new Date(data.updated_at).getTime(),
+  };
 
   // JSON-LD Product Schema
   const jsonLd = {

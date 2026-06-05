@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { adminDb } from "@/lib/firebase/admin";
+import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star } from "lucide-react";
 
@@ -11,12 +11,31 @@ export const metadata = {
 };
 
 export default async function ReviewsListingPage() {
-  const reviewsSnapshot = await adminDb.collection("reviews")
-    .where("status", "==", "published")
-    .orderBy("createdAt", "desc")
-    .get();
+  const { data } = await supabase
+    .from("reviews")
+    .select("*, categories(name)")
+    .eq("status", "published")
+    .order("created_at", { ascending: false });
     
-  const reviews = reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const reviews = (data || []).map((r: any) => ({
+    id: r.id,
+    title: r.title,
+    slug: r.slug,
+    content: r.content,
+    excerpt: r.excerpt,
+    featuredImage: r.featured_image,
+    category: r.categories?.name || "",
+    overallRating: Number(r.overall_rating) || 0,
+    scores: r.scores,
+    pros: r.pros,
+    cons: r.cons,
+    ctaLinks: r.cta_links,
+    compareWith: r.compare_with,
+    status: r.status,
+    authorId: r.author_id,
+    createdAt: new Date(r.created_at).getTime(),
+    updatedAt: new Date(r.updated_at).getTime(),
+  }));
 
   return (
     <div className="container mx-auto py-16 px-4">

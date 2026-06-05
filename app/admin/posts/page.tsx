@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { collection, query, orderBy, getDocs, deleteDoc, doc } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
+import { supabase } from "@/lib/supabase";
 import { Post } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,13 +19,32 @@ export default function PostsManager() {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
-      const postsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*, categories(name)")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const mapped = (data || []).map((p: any) => ({
+        id: p.id,
+        title: p.title,
+        slug: p.slug,
+        content: p.content,
+        excerpt: p.excerpt || "",
+        featuredImage: p.featured_image || "",
+        category: p.categories?.name || "",
+        tags: p.tags || [],
+        status: p.status as "draft" | "published",
+        authorId: p.author_id || "",
+        createdAt: new Date(p.created_at || Date.now()).getTime(),
+        updatedAt: new Date(p.updated_at || Date.now()).getTime(),
+        metaTitle: p.meta_title || "",
+        metaDescription: p.meta_description || "",
+        views: p.views || 0,
       })) as Post[];
-      setPosts(postsData);
+
+      setPosts(mapped);
     } catch (error) {
       console.error("Error fetching posts:", error);
     } finally {
@@ -37,7 +55,8 @@ export default function PostsManager() {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this post?")) {
       try {
-        await deleteDoc(doc(db, "posts", id));
+        const { error } = await supabase.from("posts").delete().eq("id", id);
+        if (error) throw error;
         setPosts(posts.filter(p => p.id !== id));
       } catch (error) {
         console.error("Error deleting post:", error);

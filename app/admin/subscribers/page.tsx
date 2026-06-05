@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
+import { supabase } from "@/lib/supabase";
 import { Subscriber } from "@/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -19,13 +18,23 @@ export default function SubscribersManager() {
   const fetchSubs = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, "subscribers"), orderBy("timestamp", "desc"));
-      const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      const { data, error } = await supabase
+        .from("subscribers")
+        .select("*")
+        .order("timestamp", { ascending: false });
+
+      if (error) throw error;
+
+      const mapped = (data || []).map((sub: any) => ({
+        id: sub.id,
+        email: sub.email,
+        name: sub.name || "",
+        source: sub.source || "",
+        timestamp: Number(sub.timestamp),
+        isVerified: sub.is_verified || false,
       })) as Subscriber[];
-      setSubscribers(data);
+
+      setSubscribers(mapped);
     } catch (error) {
       console.error("Error fetching subscribers:", error);
     } finally {

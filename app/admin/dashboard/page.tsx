@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getCountFromServer } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
+import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Star, Users, Eye } from "lucide-react";
 
@@ -17,14 +16,16 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const postsSnap = await getCountFromServer(collection(db, "posts"));
-        const reviewsSnap = await getCountFromServer(collection(db, "reviews"));
-        const subsSnap = await getCountFromServer(collection(db, "subscribers"));
+        const [postsRes, reviewsRes, subsRes] = await Promise.all([
+          supabase.from("posts").select("*", { count: "exact", head: true }),
+          supabase.from("reviews").select("*", { count: "exact", head: true }),
+          supabase.from("subscribers").select("*", { count: "exact", head: true }),
+        ]);
         
         setStats({
-          posts: postsSnap.data().count,
-          reviews: reviewsSnap.data().count,
-          subscribers: subsSnap.data().count,
+          posts: postsRes.count || 0,
+          reviews: reviewsRes.count || 0,
+          subscribers: subsRes.count || 0,
           views: 1200 // Placeholder for page views
         });
       } catch (error) {

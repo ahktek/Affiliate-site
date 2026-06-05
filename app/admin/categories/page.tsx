@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
+import { supabase } from "@/lib/supabase";
 import { Category } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,12 +18,21 @@ export default function CategoriesManager() {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "categories"));
-      const data = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      const { data, error } = await supabase.from("categories").select("*");
+      if (error) throw error;
+      
+      // Map to Category model
+      const mapped = (data || []).map((cat: any) => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        description: cat.description || "",
+        icon: cat.icon || "",
+        parentId: cat.parent_id || null,
+        createdAt: new Date(cat.created_at || Date.now()).getTime(),
       })) as Category[];
-      setCategories(data);
+
+      setCategories(mapped);
     } catch (error) {
       console.error("Error fetching categories:", error);
     } finally {
@@ -35,7 +43,8 @@ export default function CategoriesManager() {
   const handleDelete = async (id: string) => {
     if (window.confirm("Delete this category?")) {
       try {
-        await deleteDoc(doc(db, "categories", id));
+        const { error } = await supabase.from("categories").delete().eq("id", id);
+        if (error) throw error;
         setCategories(categories.filter(c => c.id !== id));
       } catch (error) {
         console.error("Error deleting:", error);
