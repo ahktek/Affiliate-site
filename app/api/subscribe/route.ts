@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { supabase } from "@/lib/supabase";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "");
-
 export async function POST(req: NextRequest) {
   try {
+    const resendApiKey = process.env.RESEND_API_KEY;
+    const resend = resendApiKey ? new Resend(resendApiKey) : null;
     const formData = await req.formData();
     const email = formData.get("email") as string;
     const source = (formData.get("source") as string) || "homepage";
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     if (error) throw error;
 
     // Send Welcome Email
-    if (process.env.RESEND_API_KEY) {
+    if (resend) {
       await resend.emails.send({
         from: "AI Reviews <hello@yourdomain.com>",
         to: email,
