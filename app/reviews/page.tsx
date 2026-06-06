@@ -27,7 +27,7 @@ export default async function ReviewsListingPage() {
     excerpt: r.excerpt,
     featuredImage: r.featured_image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
     category: r.categories?.name || "Uncategorized",
-    overallRating: Number(r.overall_rating) || 0,
+    overallRating: (Number(r.overall_rating) || 0) * 2,
     scores: r.scores,
     pros: r.pros,
     cons: r.cons,

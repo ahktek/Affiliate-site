@@ -46,7 +46,7 @@ export default async function SingleReviewPage({ params }: { params: { slug: str
     featuredImage: data.featured_image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
     category: data.categories?.name || "Uncategorized",
     categoryId: data.category_id,
-    overallRating: Number(data.overall_rating) || 0,
+    overallRating: (Number(data.overall_rating) || 0) * 2,
     scores: data.scores || {},
     pros: data.pros || [],
     cons: data.cons || [],
@@ -75,7 +75,7 @@ export default async function SingleReviewPage({ params }: { params: { slug: str
     slug: r.slug,
     featuredImage: r.featured_image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
     category: r.categories?.name || "Uncategorized",
-    overallRating: Number(r.overall_rating) || 0,
+    overallRating: (Number(r.overall_rating) || 0) * 2,
     scores: r.scores || {},
     ctaLinks: r.cta_links || [],
   }));
