@@ -58,6 +58,17 @@ const config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      boxShadow: {
+        card: "8px 8px 16px var(--border), -8px -8px 16px #ffffff",
+        floating: "12px 12px 24px var(--border), -12px -12px 24px #ffffff, inset 1px 1px 0 rgba(255,255,255,0.5)",
+        recessed: "inset 4px 4px 8px var(--border), inset -4px -4px 8px #ffffff",
+        pressed: "inset 6px 6px 12px var(--border), inset -6px -6px 12px #ffffff",
+        "led-pulse": "0 0 10px 2px rgba(255, 71, 87, 0.6)",
+      },
+      fontFamily: {
+        sans: ["var(--font-sans)", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
