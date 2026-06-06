@@ -509,23 +509,27 @@ export default function HomePageClient({ reviews, posts, categories }: HomePageC
               </div>
 
               <div className="lg:col-span-6">
-                <form action="/api/subscribe" method="POST" className="flex flex-col sm:flex-row gap-4 w-full">
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Your name"
-                    className="flex-1 font-sans text-sm bg-transparent border-b border-border-emphasis py-2 px-1 text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
-                  />
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Your email address"
-                    required
-                    className="flex-1 font-sans text-sm bg-transparent border-b border-border-emphasis py-2 px-1 text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
-                  />
+                <form action="/api/subscribe" method="POST" className="flex flex-col sm:flex-row sm:items-end gap-6 w-full">
+                  <div className="flex-1 flex flex-col space-y-1">
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Your name"
+                      className="w-full font-sans text-sm bg-transparent border-b border-border-emphasis pb-3 pt-2 px-1 text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
+                    />
+                  </div>
+                  <div className="flex-1 flex flex-col space-y-1">
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="Your email address"
+                      required
+                      className="w-full font-sans text-sm bg-transparent border-b border-border-emphasis pb-3 pt-2 px-1 text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
+                    />
+                  </div>
                   <button
                     type="submit"
-                    className="bg-primary text-primary-foreground font-sans text-sm font-medium px-6 py-3 rounded-[6px] hover:bg-accent-hover hover:translate-y-[-1px] transition-all duration-200 shadow-[0_4px_12px_rgba(200,80,42,0.18)] whitespace-nowrap"
+                    className="bg-primary text-primary-foreground font-sans text-sm font-medium px-6 py-3 h-[42px] rounded-[6px] hover:bg-accent-hover hover:translate-y-[-1px] transition-all duration-200 shadow-[0_4px_12px_rgba(200,80,42,0.18)] whitespace-nowrap self-stretch sm:self-auto"
                   >
                     Get Weekly Picks →
                   </button>

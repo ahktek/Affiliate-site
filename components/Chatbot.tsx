@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { MessageCircle, X, Send, Bot, User } from "lucide-react";
+import { MessageSquare, X, Send, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,12 @@ export default function Chatbot() {
     if (saved) {
       setMessages(JSON.parse(saved));
     } else {
-      setMessages([{ role: "assistant", content: "Hi! I'm the AI assistant for this site. How can I help you find the best tools today?" }]);
+      setMessages([
+        { 
+          role: "assistant", 
+          content: "Welcome to Chronicle. I'm your editorial research assistant. Ask me anything about the software and AI tools we've analyzed today." 
+        }
+      ]);
     }
   }, []);
 
@@ -53,7 +58,6 @@ export default function Chatbot() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Send previous messages (excluding the first welcome if needed, or keeping it)
         body: JSON.stringify({ 
           history: messages.slice(1), 
           message: userMsg 
@@ -65,10 +69,10 @@ export default function Chatbot() {
       if (response.ok) {
         setMessages([...newMessages, { role: "assistant", content: data.text }]);
       } else {
-        setMessages([...newMessages, { role: "assistant", content: "Sorry, I'm having trouble connecting right now." }]);
+        setMessages([...newMessages, { role: "assistant", content: "I'm having trouble retrieving details from our archive at the moment." }]);
       }
     } catch (error) {
-      setMessages([...newMessages, { role: "assistant", content: "An error occurred. Please try again later." }]);
+      setMessages([...newMessages, { role: "assistant", content: "A connection issue occurred. Please check back shortly." }]);
     } finally {
       setIsLoading(false);
     }
@@ -76,43 +80,47 @@ export default function Chatbot() {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - Editorial style, not rounded pill */}
       {!isOpen && (
-        <Button
+        <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg z-50 flex items-center justify-center p-0"
-          size="icon"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-white shadow-[0_4px_16px_rgba(200,80,42,0.25)] hover:bg-accent-hover active:translate-y-[1px] transition-all duration-200 z-50 flex items-center justify-center rounded-[6px]"
+          aria-label="Open Assistant"
         >
-          <MessageCircle className="w-6 h-6" />
-        </Button>
+          <MessageSquare className="w-6 h-6" />
+        </button>
       )}
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-6 right-6 w-80 md:w-96 shadow-xl z-50 flex flex-col h-[500px] border-primary/20">
-          <CardHeader className="p-4 border-b bg-primary text-primary-foreground flex flex-row items-center justify-between rounded-t-lg">
+        <Card className="fixed bottom-6 right-6 w-80 md:w-96 shadow-[0_8px_32px_rgba(26,26,24,0.08)] z-50 flex flex-col h-[520px] border border-border bg-card rounded-[6px]">
+          <CardHeader className="p-4 border-b border-border bg-[#1A1A18] text-white flex flex-row items-center justify-between rounded-t-[5px]">
             <div className="flex items-center gap-2">
-              <Bot className="w-5 h-5" />
-              <CardTitle className="text-base">AI Assistant</CardTitle>
+              <Bot className="w-5 h-5 text-primary" />
+              <CardTitle className="text-sm font-display font-medium tracking-tight">Chronicle Assistant</CardTitle>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground hover:bg-primary/90" onClick={() => setIsOpen(false)}>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-1 rounded-md text-zinc-400 hover:text-white hover:bg-[#252521] transition-all"
+              aria-label="Close Assistant"
+            >
               <X className="w-4 h-4" />
-            </Button>
+            </button>
           </CardHeader>
           
-          <CardContent className="p-0 flex-1 overflow-hidden">
+          <CardContent className="p-0 flex-1 overflow-hidden bg-secondary/30">
             <ScrollArea className="h-full p-4">
               <div className="space-y-4">
                 {messages.map((msg, idx) => (
                   <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`flex gap-2 max-w-[85%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-zinc-200 dark:bg-zinc-800"}`}>
-                        {msg.role === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                    <div className={`flex gap-2.5 max-w-[85%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border border-border text-xs ${msg.role === "user" ? "bg-primary text-white border-transparent" : "bg-[#1A1A18] text-white"}`}>
+                        {msg.role === "user" ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
                       </div>
-                      <div className={`p-3 rounded-lg text-sm ${
+                      <div className={`p-3 text-xs font-sans leading-relaxed ${
                         msg.role === "user" 
-                          ? "bg-primary text-primary-foreground rounded-tr-none" 
-                          : "bg-zinc-100 dark:bg-zinc-800 rounded-tl-none"
+                          ? "bg-primary text-white rounded-[6px] rounded-tr-none shadow-sm" 
+                          : "bg-card text-foreground border border-border rounded-[6px] rounded-tl-none shadow-sm"
                       }`}>
                         {msg.content}
                       </div>
@@ -121,11 +129,11 @@ export default function Chatbot() {
                 ))}
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="flex gap-2 max-w-[85%] flex-row">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-zinc-200 dark:bg-zinc-800">
-                        <Bot className="w-4 h-4" />
+                    <div className="flex gap-2.5 max-w-[85%] flex-row">
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 bg-[#1A1A18] text-white">
+                        <Bot className="w-3.5 h-3.5" />
                       </div>
-                      <div className="p-3 rounded-lg text-sm bg-zinc-100 dark:bg-zinc-800 rounded-tl-none flex items-center gap-1">
+                      <div className="p-3 bg-card border border-border rounded-[6px] rounded-tl-none text-muted-foreground flex items-center gap-1">
                         <span className="animate-bounce">.</span>
                         <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>.</span>
                         <span className="animate-bounce" style={{ animationDelay: "0.4s" }}>.</span>
@@ -138,18 +146,22 @@ export default function Chatbot() {
             </ScrollArea>
           </CardContent>
           
-          <CardFooter className="p-3 border-t bg-zinc-50 dark:bg-zinc-900/50">
-            <form onSubmit={sendMessage} className="flex w-full gap-2">
-              <Input 
+          <CardFooter className="p-3 border-t border-border bg-card">
+            <form onSubmit={sendMessage} className="flex w-full gap-2 items-center">
+              <input 
                 value={input} 
                 onChange={(e) => setInput(e.target.value)} 
-                placeholder="Ask me anything..." 
-                className="flex-1 bg-white dark:bg-zinc-950"
+                placeholder="Ask about product reviews..." 
+                className="flex-1 bg-secondary text-xs font-sans px-3 py-2 border border-border rounded-[4px] focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder-muted-foreground/60"
                 disabled={isLoading}
               />
-              <Button type="submit" size="icon" disabled={!input.trim() || isLoading}>
-                <Send className="w-4 h-4" />
-              </Button>
+              <button
+                type="submit"
+                disabled={!input.trim() || isLoading}
+                className="p-2 bg-primary hover:bg-accent-hover text-white rounded-[4px] disabled:opacity-50 transition-colors shrink-0"
+              >
+                <Send className="w-3.5 h-3.5" />
+              </button>
             </form>
           </CardFooter>
         </Card>
