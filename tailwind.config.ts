@@ -19,7 +19,10 @@ const config = {
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
+        border: {
+          DEFAULT: "hsl(var(--border))",
+          emphasis: "hsl(var(--border-emphasis))",
+        },
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
@@ -43,6 +46,8 @@ const config = {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          hover: "hsl(var(--accent-hover))",
+          light: "hsl(var(--accent-light))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -53,21 +58,16 @@ const config = {
           foreground: "hsl(var(--card-foreground))",
         },
       },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      boxShadow: {
-        card: "8px 8px 16px var(--border), -8px -8px 16px #ffffff",
-        floating: "12px 12px 24px var(--border), -12px -12px 24px #ffffff, inset 1px 1px 0 rgba(255,255,255,0.5)",
-        recessed: "inset 4px 4px 8px var(--border), inset -4px -4px 8px #ffffff",
-        pressed: "inset 6px 6px 12px var(--border), inset -6px -6px 12px #ffffff",
-        "led-pulse": "0 0 10px 2px rgba(255, 71, 87, 0.6)",
-      },
       fontFamily: {
-        sans: ["var(--font-sans)", "sans-serif"],
-        mono: ["var(--font-mono)", "monospace"],
+        display: ["var(--font-lora)", "serif"],
+        body: ["var(--font-source-serif)", "serif"],
+        sans: ["var(--font-instrument-sans)", "sans-serif"],
+        mono: ["var(--font-dm-mono)", "monospace"],
+      },
+      borderRadius: {
+        lg: "6px",
+        md: "4px",
+        sm: "2px",
       },
       keyframes: {
         "accordion-down": {

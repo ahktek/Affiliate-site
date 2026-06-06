@@ -1,17 +1,33 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Lora, Source_Serif_4, Instrument_Sans, DM_Mono } from "next/font/google";
 import { AuthProvider } from "@/lib/context/AuthContext";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import Chatbot from "@/components/Chatbot";
 import "./globals.css";
 
-const inter = Inter({
+const lora = Lora({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-lora",
+  display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-source-serif",
+  display: "swap",
+});
+
+const instrumentSans = Instrument_Sans({
+  subsets: ["latin"],
+  variable: "--font-instrument-sans",
+  display: "swap",
+});
+
+const dmMono = DM_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-dm-mono",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -25,18 +41,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="font-sans antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${lora.variable} ${sourceSerif.variable} ${instrumentSans.variable} ${dmMono.variable} font-body bg-background text-foreground antialiased`}>
         <AuthProvider>
-          <div className="chassis-bg min-h-screen relative">
-            <div className="relative z-10">
-              {children}
-            </div>
-          </div>
-          <Chatbot />
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            {children}
+            <Chatbot />
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
   );
 }
-

@@ -2,8 +2,11 @@ import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Script from "next/script";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import Image from "next/image";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import ReadingProgressBar from "@/components/ReadingProgressBar";
+import { ArrowLeft } from "lucide-react";
 
 export const revalidate = 3600;
 
@@ -19,7 +22,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
   
   return {
-    title: `${data.meta_title || data.title} | AI Reviews`,
+    title: `${data.meta_title || data.title} | Chronicle`,
     description: data.meta_description || data.excerpt,
   };
 }
@@ -39,11 +42,11 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     id: data.id,
     title: data.title,
     slug: data.slug,
-    content: data.content,
-    excerpt: data.excerpt,
-    featuredImage: data.featured_image,
-    category: data.categories?.name || "",
-    tags: data.tags,
+    content: data.content || "",
+    excerpt: data.excerpt || "",
+    featuredImage: data.featured_image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+    category: data.categories?.name || "Uncategorized",
+    tags: data.tags || [],
     status: data.status,
     authorId: data.author_id,
     createdAt: new Date(data.created_at).getTime(),
@@ -51,144 +54,243 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     views: data.views,
   };
 
+  // Fetch author details
+  let authorName = "Editorial Staff";
+  let authorBio = "Senior product analyst covering AI software and productivity tools.";
+  let authorAvatar = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80";
+
+  if (post.authorId) {
+    const { data: authorData } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", post.authorId)
+      .maybeSingle();
+    
+    if (authorData) {
+      authorName = authorData.display_name || authorData.email || "Editorial Staff";
+      if (authorData.bio) authorBio = authorData.bio;
+      if (authorData.avatar_url) authorAvatar = authorData.avatar_url;
+    }
+  }
+
+  // Fetch related posts (other posts in database)
+  const { data: relatedData } = await supabase
+    .from("posts")
+    .select("*, categories(name)")
+    .eq("status", "published")
+    .neq("id", post.id)
+    .limit(3);
+
+  const relatedPosts = (relatedData || []).map((p: any) => ({
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    featuredImage: p.featured_image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80",
+    category: p.categories?.name || "Uncategorized",
+  }));
+
+  // Calculate read time
+  const calculateReadTime = (text: string) => {
+    const wordsPerMinute = 220;
+    const cleanText = text.replace(/<[^>]*>/g, ""); // strip HTML
+    const wordCount = cleanText ? cleanText.split(/\s+/g).length : 0;
+    return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
+  };
+  const readTime = calculateReadTime(post.content);
+
   // JSON-LD structured data
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": post.title,
+    "image": post.featuredImage,
     "description": post.excerpt,
     "datePublished": new Date(post.createdAt).toISOString(),
     "dateModified": new Date(post.updatedAt).toISOString(),
     "author": [{
       "@type": "Person",
-      "name": "Admin"
+      "name": authorName
     }]
   };
 
   return (
-    <div className="flex min-h-screen flex-col font-sans">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/85 backdrop-blur-md shadow-card">
-        <div className="container mx-auto px-4 flex h-16 items-center justify-between max-w-6xl">
-          <Link href="/" className="font-mono font-bold text-lg tracking-wider text-foreground flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-primary animate-pulse shadow-led-pulse" />
-            AI_INDEX<span className="text-primary">.SYS</span>
-          </Link>
-          <nav className="hidden md:flex gap-8 font-mono text-xs uppercase tracking-wider">
-            <Link href="/category/ai-writing" className="text-muted-foreground hover:text-foreground transition-colors">AI WRITING</Link>
-            <Link href="/category/seo" className="text-muted-foreground hover:text-foreground transition-colors">SEO TOOLS</Link>
-            <Link href="/blog" className="text-foreground transition-colors">BLOG</Link>
-          </nav>
-          <div className="flex items-center gap-3">
-            <Button asChild variant="outline" size="sm" className="hidden md:inline-flex">
-              <Link href="/search">SEARCH</Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link href="/admin/login">ADMIN</Link>
-            </Button>
+    <div className="flex min-h-screen flex-col bg-background text-foreground transition-colors duration-300">
+      <Script
+        id="article-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      
+      {/* Thin sticky Reading Progress Bar */}
+      <ReadingProgressBar />
+
+      {/* Sticky Premium Navbar */}
+      <Navbar />
+
+      <main className="flex-1 py-12">
+        <article className="max-w-[1280px] mx-auto px-6 md:px-20">
+          
+          {/* Header Column */}
+          <div className="max-w-[680px] mx-auto space-y-6 text-left mb-10">
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-1.5 font-sans text-xs text-muted-foreground hover:text-foreground transition-colors mb-4 group"
+            >
+              <ArrowLeft size={13} className="transition-transform group-hover:-translate-x-0.5" />
+              <span>Back to Blog</span>
+            </Link>
+
+            <div className="editorial-tag">
+              {post.category}
+            </div>
+
+            <h1 className="font-display font-bold text-3xl md:text-[2.50rem] leading-[1.15] tracking-tight text-foreground">
+              {post.title}
+            </h1>
+
+            {post.excerpt && (
+              <p className="font-body text-[1.1875rem] text-foreground/90 leading-relaxed font-normal">
+                {post.excerpt}
+              </p>
+            )}
+
+            {/* Author + Date + Read Time Metadata Row */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 border-y border-border py-4 text-xs font-sans text-muted-foreground">
+              <span className="font-medium text-foreground">By {authorName}</span>
+              <span className="font-mono text-border-emphasis select-none">|</span>
+              <time dateTime={new Date(post.createdAt).toISOString()}>
+                {new Date(post.createdAt).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </time>
+              <span className="font-mono text-border-emphasis select-none">|</span>
+              <span>{readTime} min read</span>
+            </div>
           </div>
-        </div>
-      </header>
 
-      <main className="flex-1 py-16 px-4">
-        <div className="container mx-auto max-w-3xl">
-          <Script
-            id="article-schema"
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-          />
-
-          <Card className="p-8 md:p-12 relative">
-            <header className="mb-10 pb-8 border-b border-dashed border-border/80 text-left">
-              <div className="flex flex-wrap items-center gap-3 mb-4">
-                <span className="tape-label text-[10px] font-mono text-neutral-800 px-2.5 py-0.5 uppercase tracking-wider inline-block">
-                  {post.category}
-                </span>
-                <span className="text-[10px] font-mono text-muted-foreground uppercase">
-                  LOG // {new Date(post.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold font-mono tracking-tight uppercase leading-tight text-foreground mb-4">
-                {post.title}
-              </h1>
-              <div className="text-xs font-mono text-muted-foreground uppercase flex gap-4">
-                <span>READ_TIME // {Math.ceil(post.content.length / 1000)} MIN</span>
-                <span>STATUS // REQ_VERIFIED</span>
-              </div>
-            </header>
-
-            <div 
-              className="prose prose-zinc dark:prose-invert max-w-none font-sans text-sm md:text-base leading-relaxed my-8
-                prose-headings:font-mono prose-headings:uppercase prose-headings:tracking-wider prose-headings:font-bold
-                prose-h2:text-lg prose-h2:border-l-4 prose-h2:border-primary prose-h2:pl-3 prose-h2:mt-8
-                prose-a:text-primary prose-a:underline prose-a:decoration-dashed
-                prose-code:font-mono prose-code:bg-muted prose-code:px-1 prose-code:rounded prose-code:text-xs"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+          {/* Featured Image - Content Width */}
+          <div className="max-w-[680px] mx-auto aspect-[16/9] relative overflow-hidden rounded-[6px] mb-12 bg-secondary border border-border">
+            <Image
+              src={post.featuredImage}
+              alt={post.title}
+              fill
+              className="object-cover animate-image-load"
+              priority
             />
-            
-            <div className="mt-12 pt-8 border-t border-dashed border-border/80 bg-muted/20 rounded-xl p-6 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1 pointer-events-none opacity-80" style={{ backgroundImage: "linear-gradient(45deg, #ff4757 25%, transparent 25%, transparent 50%, #ff4757 50%, #ff4757 75%, transparent 75%, transparent)" , backgroundSize: "12px 12px" }} />
-              <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-foreground mb-2">
-                SUBSCRIBE TO THE LOG CHANNEL
+          </div>
+
+          {/* Centered Article Reading Column (680px) */}
+          <div className="max-w-[680px] mx-auto">
+            {/* Body content with drop cap & styling inside globals.css */}
+            {post.content ? (
+              <div
+                className="prose-editorial"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+            ) : (
+              <p className="italic text-muted-foreground">No content body found.</p>
+            )}
+
+            {/* Author Block */}
+            <div className="border-t border-border pt-8 mt-16 flex items-start gap-5">
+              <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 bg-secondary border border-border">
+                <Image
+                  src={authorAvatar}
+                  alt={authorName}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="space-y-0.5">
+                  <h4 className="font-display font-bold text-lg text-foreground leading-tight">
+                    {authorName}
+                  </h4>
+                  <span className="font-sans text-[0.7rem] uppercase tracking-wider text-muted-foreground block">
+                    EDITORIAL CONTRIBUTOR
+                  </span>
+                </div>
+                <p className="font-body text-xs text-muted-foreground leading-relaxed max-w-lg">
+                  {authorBio}
+                </p>
+                <Link
+                  href="/blog"
+                  className="inline-block font-sans text-xs font-semibold text-primary hover:text-accent-hover transition-colors"
+                >
+                  More from {authorName} →
+                </Link>
+              </div>
+            </div>
+
+            {/* Newsletter Capture Component Inside Blog Details */}
+            <div className="bg-secondary/40 border border-border p-6 md:p-8 rounded-[6px] my-12 transition-colors duration-300">
+              <h3 className="font-display font-medium italic text-xl text-foreground mb-2">
+                Enjoyed this article?
               </h3>
-              <p className="text-xs text-muted-foreground font-sans mb-4 leading-relaxed">
-                Connect your user profile to receive automated tech alerts, benchmarking comparisons, and direct logs.
+              <p className="font-body text-xs text-muted-foreground mb-4 max-w-md leading-relaxed">
+                Subscribe to our newsletter to get more insights like this delivered to your inbox once a week.
               </p>
               <form action="/api/subscribe" method="POST" className="flex flex-col sm:flex-row gap-3">
                 <input type="hidden" name="source" value={`blog-${post.slug}`} />
-                <input 
-                  type="email" 
-                  name="email" 
-                  placeholder="USER_EMAIL@DOMAIN.SYS" 
-                  className="flex h-10 w-full rounded-lg border-0 bg-background shadow-recessed px-3.5 py-2 text-xs font-mono text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-                  required 
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Your email address"
+                  className="flex-1 font-sans text-xs bg-transparent border-b border-border-emphasis py-2 px-1 text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
+                  required
                 />
-                <Button type="submit" size="sm" className="shrink-0 h-10 px-5 active:translate-y-[2px]">
-                  CONNECT
-                </Button>
+                <button
+                  type="submit"
+                  className="bg-primary text-primary-foreground font-sans text-xs font-semibold px-4 py-2 rounded-[6px] hover:bg-accent-hover hover:translate-y-[-1px] transition-all duration-200"
+                >
+                  Subscribe
+                </button>
               </form>
             </div>
-          </Card>
-        </div>
+          </div>
+
+          {/* Related Articles Section - Outside centered reading flow, inside full grid width */}
+          {relatedPosts.length > 0 && (
+            <div className="border-t border-border mt-20 pt-16">
+              <h3 className="font-display font-semibold text-2xl text-foreground mb-8 text-center md:text-left">
+                Related Reading
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {relatedPosts.map((related: any) => (
+                  <Link
+                    key={related.id}
+                    href={`/blog/${related.slug}`}
+                    className="flex gap-4 items-start group border-b md:border-b-0 border-border pb-4 md:pb-0"
+                  >
+                    <div className="relative w-20 h-20 rounded-[6px] overflow-hidden bg-secondary shrink-0">
+                      <Image
+                        src={related.featuredImage}
+                        alt={related.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="font-sans text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-primary block">
+                        {related.category}
+                      </span>
+                      <h4 className="font-body font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                        {related.title}
+                      </h4>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+        </article>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border/80 py-12 bg-muted/30 font-mono text-xs mt-12">
-        <div className="container mx-auto px-4 max-w-6xl grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="space-y-4 md:col-span-2">
-            <span className="font-bold text-sm tracking-widest text-foreground">AI_INDEX<span className="text-primary">.SYS</span></span>
-            <p className="text-xs text-muted-foreground max-w-xs leading-relaxed font-sans">
-              Empowering mechanical and automated business environments with optimal SaaS configurations.
-            </p>
-            <div className="pt-2 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
-              <span className="text-[10px] text-muted-foreground font-mono">GLOBAL MONITOR: SECURE</span>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <h4 className="font-bold text-foreground tracking-wider">SECTORS</h4>
-            <ul className="space-y-2 text-muted-foreground">
-              <li><Link href="/category/ai-writing" className="hover:text-foreground">AI_WRITING</Link></li>
-              <li><Link href="/category/seo" className="hover:text-foreground">SEO_TOOLS</Link></li>
-              <li><Link href="/category/marketing" className="hover:text-foreground">MARKETING</Link></li>
-            </ul>
-          </div>
-          <div className="space-y-4">
-            <h4 className="font-bold text-foreground tracking-wider">LEGAL_REQS</h4>
-            <ul className="space-y-2 text-muted-foreground">
-              <li><Link href="/privacy" className="hover:text-foreground">PRIVACY_POLICY</Link></li>
-              <li><Link href="/terms" className="hover:text-foreground">TERMS_OF_SERVICE</Link></li>
-              <li><Link href="/disclaimer" className="hover:text-foreground">AFFILIATE_DISC</Link></li>
-            </ul>
-          </div>
-        </div>
-        <div className="container mx-auto px-4 max-w-6xl mt-12 pt-8 border-t border-border/50 text-[10px] text-muted-foreground flex flex-col md:flex-row justify-between items-center gap-4">
-          <p>© {new Date().getFullYear()} AI_INDEX.SYS. ALL SYSTEM RIGHTS MAINTAINED.</p>
-          <p className="text-right max-w-md font-sans text-[10px] leading-relaxed">
-            AFFILIATE DISCLAIMER: Operations on this network contain referral pointers. A micro-credit may be routed to our console nodes on transaction completion.
-          </p>
-        </div>
-      </footer>
+      {/* Editorial Footer */}
+      <Footer />
     </div>
   );
 }
