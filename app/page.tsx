@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import HomePageClient from "@/components/HomePageClient";
+import { preload } from "react-dom";
 
 // Revalidate every hour
 export const revalidate = 3600;
@@ -16,6 +17,19 @@ export default async function Home() {
     heroSlides = data || [];
   } catch (e) {
     console.warn("Failed to fetch hero slides from database, falling back to static", e);
+  }
+
+  // Preload slide images using native react-dom preload
+  if (heroSlides.length > 0) {
+    heroSlides.forEach((slide: any) => {
+      if (slide.image_url) {
+        preload(slide.image_url, { as: "image" });
+      }
+    });
+  } else {
+    preload("https://images.unsplash.com/photo-1531747118685-ca8fa6e08806?auto=format&fit=crop&q=80&w=1200", { as: "image" });
+    preload("https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200", { as: "image" });
+    preload("https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=1200", { as: "image" });
   }
 
   // 2. Fetch Latest Reviews
