@@ -26,7 +26,12 @@ export default function EditPostPage() {
   const [excerpt, setExcerpt] = useState("");
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [categoryId, setCategoryId] = useState("");
-  const [status, setStatus] = useState<"draft" | "published">("draft");
+  const [status, setStatus] = useState<"draft" | "scheduled" | "published" | "archived">("draft");
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [publishedAt, setPublishedAt] = useState("");
+  const [archivedAt, setArchivedAt] = useState("");
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [featuredOrder, setFeaturedOrder] = useState<number | "">("");
 
   useEffect(() => {
     if (!postId) return;
@@ -59,6 +64,16 @@ export default function EditPostPage() {
         setExcerpt(postData.excerpt || "");
         setCategoryId(postData.category_id || "");
         setStatus(postData.status || "draft");
+        setIsFeatured(postData.is_featured || false);
+        setFeaturedOrder(postData.featured_order || "");
+        
+        if (postData.scheduled_at) {
+          const d = new Date(postData.scheduled_at);
+          const pad = (n: number) => n.toString().padStart(2, '0');
+          setScheduledAt(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`);
+        }
+        setPublishedAt(postData.published_at || "");
+        setArchivedAt(postData.archived_at || "");
       } catch (err) {
         console.error("Error loading post data:", err);
       } finally {
@@ -86,6 +101,7 @@ export default function EditPostPage() {
     setSaving(true);
 
     try {
+      const now = new Date().toISOString();
       const updatedPost = {
         title,
         slug,
@@ -93,9 +109,14 @@ export default function EditPostPage() {
         excerpt,
         category_id: categoryId || null,
         status,
+        scheduled_at: status === "scheduled" && scheduledAt ? new Date(scheduledAt).toISOString() : null,
+        published_at: status === "published" ? (publishedAt || now) : (status === "scheduled" ? null : (publishedAt || null)),
+        archived_at: status === "archived" ? (archivedAt || now) : null,
+        is_featured: isFeatured,
+        featured_order: isFeatured && featuredOrder !== "" ? Number(featuredOrder) : null,
         meta_title: title,
         meta_description: excerpt,
-        updated_at: new Date().toISOString(),
+        updated_at: now,
       };
 
       const { error } = await supabase
@@ -112,6 +133,12 @@ export default function EditPostPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const getMinDateTime = () => {
+    const minDate = new Date(Date.now() + 15 * 60 * 1000); // Now + 15 mins
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${minDate.getFullYear()}-${pad(minDate.getMonth() + 1)}-${pad(minDate.getDate())}T${pad(minDate.getHours())}:${pad(minDate.getMinutes())}`;
   };
 
   if (loading) {
@@ -166,14 +193,31 @@ export default function EditPostPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Status</Label>
-                <Select value={status} onValueChange={(v: "draft" | "published") => setStatus(v)}>
+                <Select value={status} onValueChange={(v: any) => setStatus(v)}>
                   <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="published">Published</SelectItem>
+                    <SelectItem value="scheduled">Schedule</SelectItem>
+                    <SelectItem value="published">Publish</SelectItem>
+                    <SelectItem value="archived">Archive</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
+              {status === "scheduled" && (
+                <div className="space-y-2 animate-in fade-in duration-200">
+                  <Label htmlFor="scheduledAt">Schedule Date & Time (Min: now + 15m)</Label>
+                  <Input 
+                    type="datetime-local" 
+                    id="scheduledAt" 
+                    min={getMinDateTime()} 
+                    value={scheduledAt} 
+                    onChange={(e) => setScheduledAt(e.target.value)} 
+                    required 
+                  />
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label>Category</Label>
                 <Select value={categoryId} onValueChange={setCategoryId}>
@@ -184,6 +228,35 @@ export default function EditPostPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="border-t border-border pt-4 mt-4 space-y-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="isFeatured"
+                    checked={isFeatured}
+                    onChange={(e) => setIsFeatured(e.target.checked)}
+                    className="rounded border-zinc-300 h-4 w-4 accent-primary"
+                  />
+                  <Label htmlFor="isFeatured" className="cursor-pointer">Add to Editor's Picks</Label>
+                </div>
+
+                {isFeatured && (
+                  <div className="space-y-2 animate-in fade-in duration-200">
+                    <Label htmlFor="featuredOrder">Featured Order (1-5)</Label>
+                    <Input
+                      type="number"
+                      id="featuredOrder"
+                      min={1}
+                      max={5}
+                      value={featuredOrder}
+                      onChange={(e) => setFeaturedOrder(e.target.value ? Number(e.target.value) : "")}
+                      placeholder="e.g. 1"
+                      required
+                    />
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

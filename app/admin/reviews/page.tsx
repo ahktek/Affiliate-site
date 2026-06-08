@@ -40,7 +40,10 @@ export default function ReviewsManager() {
         cons: r.cons || [],
         ctaLinks: r.cta_links || [],
         compareWith: r.compare_with || [],
-        status: r.status as "draft" | "published",
+        status: r.status as "draft" | "scheduled" | "published" | "archived",
+        scheduledAt: r.scheduled_at || "",
+        publishedAt: r.published_at || "",
+        archivedAt: r.archived_at || "",
         authorId: r.author_id || "",
         createdAt: new Date(r.created_at || Date.now()).getTime(),
         updatedAt: new Date(r.updated_at || Date.now()).getTime(),
@@ -66,6 +69,39 @@ export default function ReviewsManager() {
         console.error("Error deleting review:", error);
       }
     }
+  };
+
+  const renderStatusBadge = (review: any) => {
+    const status = review.status;
+    if (status === "published") {
+      return (
+        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+          Published
+        </span>
+      );
+    }
+    if (status === "scheduled") {
+      const dateStr = review.scheduledAt 
+        ? new Date(review.scheduledAt).toLocaleDateString() + " " + new Date(review.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : "";
+      return (
+        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" title={`Publishes ${dateStr}`}>
+          Publishes {dateStr.split(" ")[0]}
+        </span>
+      );
+    }
+    if (status === "archived") {
+      return (
+        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400">
+          Archived
+        </span>
+      );
+    }
+    return (
+      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
+        Draft
+      </span>
+    );
   };
 
   return (
@@ -106,13 +142,7 @@ export default function ReviewsManager() {
                   <TableCell>{review.overallRating} / 5</TableCell>
                   <TableCell>{review.category}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      review.status === "published" 
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
-                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                    }`}>
-                      {review.status}
-                    </span>
+                    {renderStatusBadge(review)}
                   </TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button variant="outline" size="icon" asChild>

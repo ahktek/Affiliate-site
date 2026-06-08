@@ -1,14 +1,29 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Star, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import HeroSlider from "@/components/HeroSlider";
+import { useCompareStore } from "@/lib/store/compareStore";
+import { 
+  Star, 
+  ArrowRight, 
+  ChevronLeft, 
+  ChevronRight, 
+  Layers, 
+  User, 
+  Clock, 
+  DollarSign, 
+  Zap, 
+  Info,
+  Check
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 interface Review {
-  id: string | number;
+  id: string;
   title: string;
   slug: string;
   excerpt: string;
@@ -19,7 +34,7 @@ interface Review {
 }
 
 interface Post {
-  id: string | number;
+  id: string;
   title: string;
   slug: string;
   excerpt: string;
@@ -29,28 +44,86 @@ interface Post {
 }
 
 interface Category {
-  id: string | number;
+  id: string;
   name: string;
 }
 
+interface EditorsPick {
+  id: string;
+  type: "review" | "post" | "tool";
+  title: string;
+  slug: string;
+  excerpt: string;
+  featuredImage: string;
+  category: string;
+  overallRating?: number;
+  createdAt: number;
+  featuredOrder: number;
+}
+
+interface AIProduct {
+  id: string;
+  slug: string;
+  name: string;
+  tagline: string;
+  logoUrl?: string;
+  screenshotUrls?: string[];
+  category: string;
+  overallScore: number;
+  pricingModel: string;
+  hasFreeTier: boolean;
+  startingPrice: string;
+  apiAvailable: boolean;
+  verdict: string;
+}
+
 interface HomePageClientProps {
+  heroSlides: any[];
   reviews: Review[];
   posts: Post[];
   categories: Category[];
+  editorsPicks: EditorsPick[];
+  comparisonProducts: AIProduct[];
+  aiToolsTeaser: any[];
 }
 
-export default function HomePageClient({ reviews, posts, categories }: HomePageClientProps) {
-  const heroReview = reviews[0];
-  const secondaryReviews = reviews.slice(1, 4); // 3 reviews for asymmetric layout
-  const editorsPicks = reviews.slice(4, 8); // Taller cards horizontal scroll
-  
-  // Category signature hues
-  const categoryHues = [
-    "bg-[#FDF2EE] text-[#A83E1F]", // Amber/Red
-    "bg-[#F7F6EE] text-[#736F38]", // Sage/Olive
-    "bg-[#F2F6F7] text-[#3E6B7A]", // Cool Slate
-    "bg-[#F5F2F7] text-[#693E7A]", // Deep Lavender
-  ];
+export default function HomePageClient({
+  reviews,
+  posts,
+  categories,
+  editorsPicks,
+  comparisonProducts,
+  aiToolsTeaser,
+}: HomePageClientProps) {
+  const addItem = useCompareStore((state) => state.addItem);
+  const removeItem = useCompareStore((state) => state.removeItem);
+  const compareItems = useCompareStore((state) => state.items);
+
+  // Stagger animation container variants
+  const gridContainerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: "spring" as const, stiffness: 100, damping: 15 },
+    },
+  };
+
+  // Format the updated month/year for Editors Picks
+  const formattedUpdatedDate = useMemo(() => {
+    const date = new Date();
+    return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground transition-colors duration-300">
@@ -58,251 +131,340 @@ export default function HomePageClient({ reviews, posts, categories }: HomePageC
       <Navbar />
 
       <main className="flex-1">
-        {/* HERO SECTION */}
-        <section className="pt-8 pb-16 md:py-20 max-w-[1280px] mx-auto px-6 md:px-20 border-b border-border">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch min-h-[480px]">
-            {/* Left aligned headline */}
-            <div className="lg:col-span-7 flex flex-col justify-center space-y-8 pr-0 lg:pr-8">
-              <h1 className="font-display font-bold text-4xl md:text-[4rem] leading-[1.08] tracking-tight text-foreground">
-                We test the tools.<br />
-                You build the future.
-              </h1>
-              <p className="font-body text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
-                Independent, data-driven reviews of AI software and digital tools. We do the hours of research so you don't have to.
-              </p>
-              <div className="flex flex-wrap gap-4 pt-2">
-                <Link
-                  href="#latest-reviews"
-                  className="bg-primary text-primary-foreground font-sans text-sm font-medium px-6 py-3 rounded-[6px] hover:bg-accent-hover hover:translate-y-[-1px] transition-all duration-200 shadow-[0_4px_12px_rgba(200,80,42,0.18)]"
-                >
-                  Explore Reviews
-                </Link>
-                <Link
-                  href="/blog"
-                  className="bg-secondary text-foreground border border-border font-sans text-sm font-medium px-6 py-3 rounded-[6px] hover:bg-border/30 transition-all duration-200"
-                >
-                  Read Editorial Blog
-                </Link>
-              </div>
-            </div>
+        {/* 1. HERO SLIDER */}
+        <HeroSlider />
 
-            {/* Thin accent line vertical divider */}
-            <div className="hidden lg:block lg:col-span-1 justify-self-center w-[1px] bg-border-emphasis relative my-6">
-              <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary" />
-            </div>
-
-            {/* Right side featured image */}
-            <div className="lg:col-span-4 relative h-[300px] lg:h-auto min-h-[350px] overflow-hidden rounded-[6px] group">
-              {heroReview ? (
-                <Link href={`/reviews/${heroReview.slug}`} className="block w-full h-full relative">
-                  <Image
-                    src={heroReview.featuredImage}
-                    alt={heroReview.title}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 33vw"
-                    className="object-cover rounded-[6px] transition-transform duration-500 group-hover:scale-[1.03]"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
-                    <span className="font-sans text-[0.7rem] uppercase tracking-[0.08em] font-semibold text-primary-foreground bg-primary px-2.5 py-1 rounded-[4px] self-start mb-3">
-                      LATEST REVIEW
-                    </span>
-                    <h3 className="font-display font-medium text-xl md:text-2xl text-white line-clamp-2 leading-snug">
-                      {heroReview.title}
-                    </h3>
-                    <p className="font-body text-xs text-zinc-300 mt-2 flex items-center gap-1.5">
-                      Rating: <span className="font-mono font-bold text-primary">{heroReview.overallRating.toFixed(1)}/10</span>
-                    </p>
-                  </div>
-                </Link>
-              ) : (
-                <div className="w-full h-full bg-secondary flex items-center justify-center text-muted-foreground font-body">
-                  No review published yet.
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Below Hero: Horizontal Scrolling Category Pill Nav */}
-          <div className="mt-12 flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0">
-            <span className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
-              Browse Topics:
+        {/* 2. EDITOR'S PICKS GRID BOX */}
+        <section id="editors-picks" className="py-20 max-w-[1280px] mx-auto px-6 md:px-20 border-b border-border">
+          <div className="flex items-baseline space-x-3 mb-10 pl-4 border-l-4 border-primary">
+            <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground leading-none">
+              Editor's Picks
+            </h2>
+            <span className="font-sans text-xs text-muted-foreground">
+              Updated {formattedUpdatedDate}
             </span>
-            <Link
-              href="/reviews"
-              className="font-sans text-xs uppercase tracking-[0.08em] px-4 py-2 border border-border rounded-full hover:bg-secondary transition-all whitespace-nowrap bg-background text-foreground"
-            >
-              All Categories
-            </Link>
-            {categories.map((cat: any) => (
-              <Link
-                key={cat.id}
-                href={`/reviews?category=${cat.id}`}
-                className="font-sans text-xs uppercase tracking-[0.08em] px-4 py-2 border border-border rounded-full hover:border-primary/40 hover:bg-secondary transition-all whitespace-nowrap bg-background text-foreground"
-              >
-                {cat.name}
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* EDITORIAL GRID SECTION */}
-        <section id="latest-reviews" className="py-20 max-w-[1280px] mx-auto px-6 md:px-20 border-b border-border">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-            <div>
-              <span className="font-sans text-xs font-semibold uppercase tracking-[0.08em] text-primary block mb-2">
-                HANDS-ON ANALYSIS
-              </span>
-              <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground">
-                In-Depth Product Reviews
-              </h2>
-            </div>
-            <Link
-              href="/reviews"
-              className="font-sans text-sm font-semibold text-primary hover:text-accent-hover mt-4 md:mt-0 flex items-center gap-1.5 transition-colors group"
-            >
-              View all reviews
-              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-            </Link>
           </div>
 
-          {reviews.length === 0 ? (
-            <div className="text-center py-20 bg-secondary border border-border rounded-[6px]">
-              <p className="font-body text-muted-foreground">No review articles published yet.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-              {/* Column 1: Wide hero card */}
-              <div className="lg:col-span-5 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-border pb-8 lg:pb-0 lg:pr-10">
-                {heroReview && (
-                  <article className="space-y-6 group">
-                    <div className="relative aspect-[16/10] overflow-hidden rounded-[6px] bg-secondary">
-                      <Image
-                        src={heroReview.featuredImage}
-                        alt={heroReview.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-[1.025]"
-                      />
-                      <span className="absolute bottom-3 left-3 font-sans text-[0.7rem] uppercase tracking-[0.08em] font-semibold text-primary bg-accent-light px-2.5 py-1 rounded-[4px]">
-                        {heroReview.category}
-                      </span>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-xs text-muted-foreground">
-                          {new Date(heroReview.createdAt).toLocaleDateString("en-US", {
+          <motion.div
+            variants={gridContainerVariants}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-80px" }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+          >
+            {/* Row 1, Card 1: 1 large hero card (left, 60% width) */}
+            {editorsPicks[0] && (
+              <motion.div variants={cardVariants} className="lg:col-span-7 flex flex-col justify-between group">
+                <Link href={`/${editorsPicks[0].type === "post" ? "blog" : "reviews"}/${editorsPicks[0].slug}`} className="block space-y-6">
+                  <div className="relative aspect-[16/10] overflow-hidden rounded-[6px] bg-secondary border border-border">
+                    <Image
+                      src={editorsPicks[0].featuredImage}
+                      alt={editorsPicks[0].title}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 60vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.015]"
+                    />
+                    <span className="absolute bottom-4 left-4 font-sans text-[0.7rem] uppercase tracking-[0.08em] font-semibold text-primary-foreground bg-primary px-2.5 py-1 rounded-[4px]">
+                      {editorsPicks[0].category}
+                    </span>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-muted-foreground font-sans text-xs">
+                        <Clock size={12} />
+                        <span>
+                          {new Date(editorsPicks[0].createdAt).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
                             year: "numeric",
                           })}
                         </span>
-                        <div className="flex items-center gap-1 font-sans text-xs font-bold text-primary bg-accent-light px-2 py-0.5 rounded-[4px]">
-                          <Star size={12} className="fill-current" />
-                          <span>{heroReview.overallRating.toFixed(1)}</span>
-                        </div>
                       </div>
-                      <h3 className="font-display font-semibold text-2xl text-foreground group-hover:text-primary transition-colors leading-snug">
-                        <Link href={`/reviews/${heroReview.slug}`}>
-                          {heroReview.title}
-                        </Link>
+                      {editorsPicks[0].overallRating !== undefined && editorsPicks[0].overallRating > 0 && (
+                        <div className="flex items-center gap-1 font-sans text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-[4px]">
+                          <Star size={12} className="fill-current" />
+                          <span>{editorsPicks[0].overallRating.toFixed(1)}</span>
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="font-display font-semibold text-2xl md:text-3xl text-foreground group-hover:text-primary transition-colors leading-tight">
+                      {editorsPicks[0].title}
+                    </h3>
+                    <p className="font-body text-[0.95rem] text-muted-foreground leading-relaxed line-clamp-2">
+                      {editorsPicks[0].excerpt}
+                    </p>
+                  </div>
+                </Link>
+              </motion.div>
+            )}
+
+            {/* Row 1, Card 2: 1 tall card (right, 40% width) */}
+            {editorsPicks[1] && (
+              <motion.div variants={cardVariants} className="lg:col-span-5 flex flex-col justify-between group">
+                <Link href={`/${editorsPicks[1].type === "post" ? "blog" : "reviews"}/${editorsPicks[1].slug}`} className="block space-y-6">
+                  <div className="relative aspect-[16/12] lg:aspect-square overflow-hidden rounded-[6px] bg-secondary border border-border">
+                    <Image
+                      src={editorsPicks[1].featuredImage}
+                      alt={editorsPicks[1].title}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 40vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.015]"
+                    />
+                    <span className="absolute bottom-4 left-4 font-sans text-[0.7rem] uppercase tracking-[0.08em] font-semibold text-primary-foreground bg-primary px-2.5 py-1 rounded-[4px]">
+                      {editorsPicks[1].category}
+                    </span>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-muted-foreground font-sans text-xs">
+                        <Clock size={12} />
+                        <span>
+                          {new Date(editorsPicks[1].createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      {editorsPicks[1].overallRating !== undefined && editorsPicks[1].overallRating > 0 && (
+                        <div className="flex items-center gap-1 font-sans text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-[4px]">
+                          <Star size={12} className="fill-current" />
+                          <span>{editorsPicks[1].overallRating.toFixed(1)}</span>
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="font-display font-semibold text-xl md:text-2xl text-foreground group-hover:text-primary transition-colors leading-tight">
+                      {editorsPicks[1].title}
+                    </h3>
+                    <p className="font-body text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                      {editorsPicks[1].excerpt}
+                    </p>
+                  </div>
+                </Link>
+              </motion.div>
+            )}
+
+            {/* Row 2: 3 equal cards (or dynamic collapse) */}
+            {editorsPicks.slice(2).map((pick, index) => {
+              const remainingCount = editorsPicks.slice(2).length;
+              const colSpanClass = remainingCount === 3 
+                ? "lg:col-span-4" 
+                : remainingCount === 2 
+                  ? "lg:col-span-6" 
+                  : "lg:col-span-12";
+              return (
+                <motion.div
+                  key={pick.id}
+                  variants={cardVariants}
+                  className={`${colSpanClass} border-t border-border pt-8 mt-4 lg:mt-0 flex flex-col justify-between group`}
+                >
+                  <Link href={`/${pick.type === "post" ? "blog" : "reviews"}/${pick.slug}`} className="block space-y-4">
+                    <div className="relative aspect-[16/10] overflow-hidden rounded-[6px] bg-secondary border border-border">
+                      <Image
+                        src={pick.featuredImage}
+                        alt={pick.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 30vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.015]"
+                      />
+                      <span className="absolute bottom-3 left-3 font-sans text-[0.65rem] uppercase tracking-[0.08em] font-semibold text-primary-foreground bg-primary px-2 py-0.5 rounded-[4px]">
+                        {pick.category}
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1 text-muted-foreground font-sans text-xs">
+                          <Clock size={11} />
+                          <span>
+                            {new Date(pick.createdAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </span>
+                        </div>
+                        {pick.overallRating !== undefined && pick.overallRating > 0 && (
+                          <div className="flex items-center gap-0.5 font-sans text-xs font-bold text-primary">
+                            <Star size={11} className="fill-current" />
+                            <span>{pick.overallRating.toFixed(1)}</span>
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="font-display font-semibold text-lg text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2">
+                        {pick.title}
                       </h3>
-                      <p className="font-body text-[0.95rem] text-muted-foreground leading-relaxed line-clamp-3">
-                        {heroReview.excerpt || "Read our deep dive review analyzing key features, pros, cons, and performance scores."}
+                      <p className="font-body text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                        {pick.excerpt}
                       </p>
                     </div>
-                    <div className="pt-2">
-                      <Link
-                        href={`/reviews/${heroReview.slug}`}
-                        className="font-sans text-xs uppercase tracking-[0.08em] font-semibold text-foreground border-b border-foreground pb-1 hover:text-primary hover:border-primary transition-all"
-                      >
-                        Read Full Review
-                      </Link>
-                    </div>
-                  </article>
-                )}
-              </div>
-
-              {/* Column 2 & 3 stacked: Narrow thumbnail cards */}
-              <div className="lg:col-span-7 flex flex-col justify-start space-y-8">
-                {secondaryReviews.length === 0 ? (
-                  <div className="text-center py-10 text-muted-foreground font-body text-sm">
-                    No additional reviews.
-                  </div>
-                ) : (
-                  secondaryReviews.map((review) => (
-                    <article
-                      key={review.id}
-                      className="grid grid-cols-1 sm:grid-cols-4 gap-6 items-start border-b border-border pb-6 last:border-b-0 last:pb-0 group"
-                    >
-                      <div className="sm:col-span-1 relative aspect-square overflow-hidden rounded-[6px] bg-secondary w-full">
-                        <Image
-                          src={review.featuredImage}
-                          alt={review.title}
-                          fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-[1.025]"
-                        />
-                      </div>
-                      <div className="sm:col-span-3 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="font-sans text-[0.7rem] uppercase tracking-[0.08em] text-primary font-semibold">
-                            {review.category}
-                          </span>
-                          <div className="flex items-center gap-1 font-sans text-xs font-semibold text-primary">
-                            <Star size={11} className="fill-current" />
-                            <span>{review.overallRating.toFixed(1)}</span>
-                          </div>
-                        </div>
-                        <h3 className="font-display font-semibold text-lg text-foreground group-hover:text-primary transition-colors leading-snug">
-                          <Link href={`/reviews/${review.slug}`}>
-                            {review.title}
-                          </Link>
-                        </h3>
-                        <p className="font-body text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                          {review.excerpt || "Read our detailed hands-on review to see if this is the right tool for you."}
-                        </p>
-                        <div className="pt-1">
-                          <span className="font-sans text-[0.7rem] text-muted-foreground">
-                            Published {new Date(review.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                          </span>
-                        </div>
-                      </div>
-                    </article>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </motion.div>
         </section>
 
-        {/* EDITOR'S PICKS SECTION */}
-        <section className="py-20 bg-secondary/40 transition-colors border-b border-border overflow-hidden">
+        {/* 3. QUICK COMPARISON SECTION */}
+        {comparisonProducts && comparisonProducts.length >= 2 && (
+          <section className="py-20 bg-secondary/30 border-b border-border">
+            <div className="max-w-[1280px] mx-auto px-6 md:px-20">
+              <div className="text-center max-w-xl mx-auto mb-16">
+                <span className="font-sans text-xs font-semibold uppercase tracking-[0.08em] text-primary block mb-2">
+                  HEAD TO HEAD
+                </span>
+                <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground">
+                  Featured Matchup
+                </h2>
+                <p className="font-body text-sm text-muted-foreground mt-3 leading-relaxed">
+                  Updated picks from our editors comparing core features and specs side-by-side.
+                </p>
+              </div>
+
+              {/* Matchup Widget Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-11 gap-8 items-stretch bg-card p-8 md:p-12 rounded-[6px] border border-border relative">
+                {/* Product A */}
+                <div className="md:col-span-5 flex flex-col items-center justify-between text-center space-y-6">
+                  <div className="relative aspect-[16/9] w-full rounded-[6px] overflow-hidden bg-secondary border border-border">
+                    <Image
+                      src={comparisonProducts[0].screenshotUrls?.[0] || comparisonProducts[0].logoUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80"}
+                      alt={comparisonProducts[0].name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="space-y-2 w-full">
+                    <span className="font-sans text-[0.65rem] uppercase tracking-wider text-muted-foreground px-2 py-0.5 bg-secondary border border-border rounded-full">
+                      {comparisonProducts[0].category}
+                    </span>
+                    <h3 className="font-display font-bold text-2xl text-foreground mt-2">{comparisonProducts[0].name}</h3>
+                  </div>
+
+                  {/* Circular Score Badge */}
+                  <div className="relative flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full border-2 border-primary bg-primary/5 flex items-center justify-center shadow-sm">
+                      <span className="font-display font-bold text-2xl text-primary">{Number(comparisonProducts[0].overallScore).toFixed(1)}</span>
+                    </div>
+                  </div>
+
+                  {/* Specs List */}
+                  <div className="w-full space-y-3 pt-2 text-left border-t border-border">
+                    <div className="flex justify-between items-center text-xs py-1 border-b border-border/50">
+                      <span className="font-sans text-muted-foreground flex items-center gap-1.5"><DollarSign size={12} /> Pricing Model</span>
+                      <span className="font-sans font-medium text-foreground uppercase text-[10px] bg-secondary px-2 py-0.5 rounded-[4px]">{comparisonProducts[0].pricingModel}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs py-1 border-b border-border/50">
+                      <span className="font-sans text-muted-foreground flex items-center gap-1.5"><Zap size={12} /> Starting Price</span>
+                      <span className="font-body font-medium text-foreground">{comparisonProducts[0].startingPrice || "$0"}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs py-1">
+                      <span className="font-sans text-muted-foreground flex items-center gap-1.5"><Info size={12} /> API Access</span>
+                      <span className="font-sans font-medium text-foreground">{comparisonProducts[0].apiAvailable ? "Available" : "No"}</span>
+                    </div>
+                  </div>
+
+                  {/* Verdict Pill */}
+                  <span className="font-sans text-xs uppercase tracking-wider font-semibold text-primary bg-[#FDF2EE] dark:bg-[#2c150c] px-3 py-1 rounded-full border border-primary/20">
+                    {comparisonProducts[0].verdict.replace("-", " ")}
+                  </span>
+                </div>
+
+                {/* Vertical Center Divider with VS */}
+                <div className="md:col-span-1 flex flex-row md:flex-col items-center justify-center gap-4 relative py-6 md:py-0">
+                  <div className="hidden md:block w-[1px] flex-1 bg-border" />
+                  <span className="font-sans text-xs font-bold text-muted-foreground bg-secondary border border-border-emphasis w-10 h-10 rounded-full flex items-center justify-center shadow-sm">
+                    VS
+                  </span>
+                  <div className="hidden md:block w-[1px] flex-1 bg-border" />
+                </div>
+
+                {/* Product B */}
+                <div className="md:col-span-5 flex flex-col items-center justify-between text-center space-y-6">
+                  <div className="relative aspect-[16/9] w-full rounded-[6px] overflow-hidden bg-secondary border border-border">
+                    <Image
+                      src={comparisonProducts[1].screenshotUrls?.[0] || comparisonProducts[1].logoUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80"}
+                      alt={comparisonProducts[1].name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="space-y-2 w-full">
+                    <span className="font-sans text-[0.65rem] uppercase tracking-wider text-muted-foreground px-2 py-0.5 bg-secondary border border-border rounded-full">
+                      {comparisonProducts[1].category}
+                    </span>
+                    <h3 className="font-display font-bold text-2xl text-foreground mt-2">{comparisonProducts[1].name}</h3>
+                  </div>
+
+                  {/* Circular Score Badge */}
+                  <div className="relative flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full border-2 border-primary bg-primary/5 flex items-center justify-center shadow-sm">
+                      <span className="font-display font-bold text-2xl text-primary">{Number(comparisonProducts[1].overallScore).toFixed(1)}</span>
+                    </div>
+                  </div>
+
+                  {/* Specs List */}
+                  <div className="w-full space-y-3 pt-2 text-left border-t border-border">
+                    <div className="flex justify-between items-center text-xs py-1 border-b border-border/50">
+                      <span className="font-sans text-muted-foreground flex items-center gap-1.5"><DollarSign size={12} /> Pricing Model</span>
+                      <span className="font-sans font-medium text-foreground uppercase text-[10px] bg-secondary px-2 py-0.5 rounded-[4px]">{comparisonProducts[1].pricingModel}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs py-1 border-b border-border/50">
+                      <span className="font-sans text-muted-foreground flex items-center gap-1.5"><Zap size={12} /> Starting Price</span>
+                      <span className="font-body font-medium text-foreground">{comparisonProducts[1].startingPrice || "$0"}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs py-1">
+                      <span className="font-sans text-muted-foreground flex items-center gap-1.5"><Info size={12} /> API Access</span>
+                      <span className="font-sans font-medium text-foreground">{comparisonProducts[1].apiAvailable ? "Available" : "No"}</span>
+                    </div>
+                  </div>
+
+                  {/* Verdict Pill */}
+                  <span className="font-sans text-xs uppercase tracking-wider font-semibold text-primary bg-[#FDF2EE] dark:bg-[#2c150c] px-3 py-1 rounded-full border border-primary/20">
+                    {comparisonProducts[1].verdict.replace("-", " ")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Full Comparison Link Button */}
+              <div className="mt-8 text-center">
+                <Link
+                  href={`/compare?ids=${comparisonProducts[0].id},${comparisonProducts[1].id}`}
+                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-sans text-sm font-semibold px-8 py-3.5 rounded-[6px] hover:bg-accent-hover transition-all shadow-md shadow-primary/10 w-full sm:w-auto"
+                >
+                  <span>See Full Comparison</span>
+                  <ArrowRight size={15} />
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* 4. LATEST REVIEWS HORIZONTAL SCROLL STRIP */}
+        <section className="py-20 border-b border-border overflow-hidden">
           <div className="max-w-[1280px] mx-auto px-6 md:px-20">
             <div className="flex items-end justify-between mb-12">
               <div>
                 <span className="font-sans text-xs font-semibold uppercase tracking-[0.08em] text-primary block mb-2">
-                  CURATED SELECTS
+                  HANDS-ON TESTING
                 </span>
                 <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground">
-                  Editor's Picks
+                  Latest Software Reviews
                 </h2>
               </div>
               <div className="flex items-center space-x-3 text-muted-foreground select-none">
                 <button
                   onClick={() => {
-                    const scrollContainer = document.getElementById("picks-scroll");
-                    if (scrollContainer) scrollContainer.scrollBy({ left: -300, behavior: "smooth" });
+                    const scrollContainer = document.getElementById("reviews-scroll");
+                    if (scrollContainer) scrollContainer.scrollBy({ left: -320, behavior: "smooth" });
                   }}
-                  className="p-2.5 rounded-full border border-border hover:bg-background hover:text-foreground transition-all duration-200"
+                  className="p-2.5 rounded-full border border-border hover:bg-secondary hover:text-foreground transition-all duration-200"
                   aria-label="Scroll left"
                 >
                   <ChevronLeft size={18} />
                 </button>
                 <button
                   onClick={() => {
-                    const scrollContainer = document.getElementById("picks-scroll");
-                    if (scrollContainer) scrollContainer.scrollBy({ left: 300, behavior: "smooth" });
+                    const scrollContainer = document.getElementById("reviews-scroll");
+                    if (scrollContainer) scrollContainer.scrollBy({ left: 320, behavior: "smooth" });
                   }}
-                  className="p-2.5 rounded-full border border-border hover:bg-background hover:text-foreground transition-all duration-200"
+                  className="p-2.5 rounded-full border border-border hover:bg-secondary hover:text-foreground transition-all duration-200"
                   aria-label="Scroll right"
                 >
                   <ChevronRight size={18} />
@@ -310,192 +472,169 @@ export default function HomePageClient({ reviews, posts, categories }: HomePageC
               </div>
             </div>
 
-            {/* Horizontal Scroll Strip */}
+            {/* Horizontal Scroll Strip Container */}
             <div
-              id="picks-scroll"
+              id="reviews-scroll"
               className="flex gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x -mx-6 px-6 md:mx-0 md:px-0"
               style={{ scrollSnapType: "x mandatory" }}
             >
-              {editorsPicks.length === 0 ? (
-                <div className="w-full text-center py-12 text-muted-foreground font-body text-sm">
-                  Curated picks will appear here.
-                </div>
-              ) : (
-                editorsPicks.map((pick) => (
-                  <div
-                    key={pick.id}
-                    className="flex-shrink-0 w-[280px] md:w-[320px] snap-start bg-card border border-border rounded-[6px] p-5 space-y-4 hover:border-primary/40 transition-all duration-300"
-                  >
-                    <div className="relative aspect-[3/4] overflow-hidden rounded-[4px] bg-secondary group">
+              {reviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="flex-shrink-0 w-[290px] md:w-[330px] snap-start bg-card border border-border rounded-[6px] p-5 space-y-4 hover:border-primary/30 transition-all duration-300 flex flex-col justify-between"
+                >
+                  <div className="space-y-4">
+                    <div className="relative aspect-[16/10] overflow-hidden rounded-[4px] bg-secondary group">
                       <Image
-                        src={pick.featuredImage}
-                        alt={pick.title}
+                        src={review.featuredImage}
+                        alt={review.title}
                         fill
+                        sizes="(max-width: 768px) 290px, 330px"
                         className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                       />
-                      <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-[4px] font-mono text-xs font-bold text-white">
-                        ★ {pick.overallRating.toFixed(1)}
+                      <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-[4px] font-mono text-xs font-bold text-white flex items-center gap-0.5">
+                        ★ {review.overallRating.toFixed(1)}
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <span className="font-sans text-[0.75rem] font-medium uppercase tracking-[0.08em] text-primary">
-                        {pick.category}
+                      <span className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-primary">
+                        {review.category}
                       </span>
-                      <h3 className="font-display font-medium text-lg text-foreground line-clamp-2 leading-snug">
-                        <Link href={`/reviews/${pick.slug}`}>
-                          {pick.title}
-                        </Link>
+                      <h3 className="font-display font-medium text-lg text-foreground line-clamp-1 leading-snug hover:text-primary transition-colors">
+                        <Link href={`/reviews/${review.slug}`}>{review.title}</Link>
                       </h3>
                       <p className="font-body text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {pick.excerpt || "Our editors have hand-selected this product based on its quality, specs, and performance."}
+                        {review.excerpt}
                       </p>
                     </div>
                   </div>
-                ))
-              )}
+
+                  <div className="pt-4 border-t border-border flex justify-between items-center">
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      {new Date(review.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    </span>
+                    <Link
+                      href={`/reviews/${review.slug}`}
+                      className="font-sans text-xs font-semibold text-primary hover:text-accent-hover transition-colors"
+                    >
+                      Read Review →
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* COMPARISON TEASER */}
-        {reviews.length >= 2 && (
+        {/* 5. AI TOOLS DIRECTORY TEASER */}
+        {aiToolsTeaser && aiToolsTeaser.length > 0 && (
           <section className="py-20 max-w-[1280px] mx-auto px-6 md:px-20 border-b border-border">
-            <div className="text-center max-w-xl mx-auto mb-16">
-              <span className="font-sans text-xs font-semibold uppercase tracking-[0.08em] text-primary block mb-2">
-                HEAD-TO-HEAD
-              </span>
-              <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground">
-                How They Match Up
-              </h2>
-              <p className="font-body text-sm text-muted-foreground mt-3 leading-relaxed">
-                Direct comparisons of top-tier software. Look closely at the data scores.
-              </p>
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+              <div>
+                <span className="font-sans text-xs font-semibold uppercase tracking-[0.08em] text-primary block mb-2">
+                  AI DIRECTORY
+                </span>
+                <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground">
+                  Browse AI Tools
+                </h2>
+              </div>
+              <Link
+                href="/compare"
+                className="font-sans text-sm font-semibold text-primary hover:text-accent-hover mt-4 md:mt-0 flex items-center gap-1.5 transition-colors group"
+              >
+                Open directory & compare
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+              </Link>
             </div>
 
-            {/* Versus Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-11 gap-8 items-center bg-secondary/30 p-8 md:p-12 rounded-[6px] border border-border">
-              {/* Product 1 */}
-              <div className="md:col-span-5 flex flex-col items-center md:items-end text-center md:text-right space-y-4">
-                <div className="relative w-24 h-24 rounded-[6px] overflow-hidden bg-background border border-border">
-                  <Image
-                    src={reviews[0].featuredImage}
-                    alt={reviews[0].title}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <span className="font-sans text-xs uppercase tracking-wider text-muted-foreground">{reviews[0].category}</span>
-                  <h3 className="font-display font-semibold text-xl text-foreground mt-1">{reviews[0].title}</h3>
-                </div>
-                <div className="bg-primary/10 border border-primary/20 text-primary font-display font-bold text-2xl w-14 h-14 rounded-full flex items-center justify-center">
-                  {reviews[0].overallRating.toFixed(1)}
-                </div>
-                <Link
-                  href={`/reviews/${reviews[0].slug}`}
-                  className="font-sans text-xs uppercase tracking-[0.08em] font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Read Review →
-                </Link>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {aiToolsTeaser.map((tool) => {
+                const isInCompare = compareItems.some((i) => i.id === tool.id);
+                return (
+                  <div
+                    key={tool.id}
+                    className="bg-card border border-border rounded-[6px] p-6 hover:border-primary/30 transition-all duration-300 flex flex-col justify-between"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-start justify-between">
+                        <div className="relative w-12 h-12 rounded-[6px] overflow-hidden bg-secondary border border-border">
+                          <Image
+                            src={tool.logoUrl}
+                            alt={tool.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1 bg-primary/10 border border-primary/20 text-primary font-mono text-xs font-bold px-2 py-0.5 rounded-[4px]">
+                          ★ {Number(tool.overallScore).toFixed(1)}
+                        </div>
+                      </div>
 
-              {/* VERSUS Indicator */}
-              <div className="md:col-span-1 flex justify-center py-4 md:py-0">
-                <span className="font-sans text-xs font-bold text-muted-foreground bg-background border border-border-emphasis w-10 h-10 rounded-full flex items-center justify-center shadow-sm">
-                  VS
-                </span>
-              </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-sans text-[0.65rem] uppercase tracking-wider text-muted-foreground px-2 py-0.5 bg-secondary border border-border rounded-full">
+                            {tool.category}
+                          </span>
+                          <span className="font-sans text-[10px] uppercase font-semibold text-primary-foreground bg-primary px-1.5 py-0.5 rounded-[4px]">
+                            {tool.pricingModel}
+                          </span>
+                        </div>
+                        <h3 className="font-display font-bold text-lg text-foreground mt-1">{tool.name}</h3>
+                        <p className="font-body text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                          {tool.tagline}
+                        </p>
+                      </div>
+                    </div>
 
-              {/* Product 2 */}
-              <div className="md:col-span-5 flex flex-col items-center md:items-start text-center md:text-left space-y-4">
-                <div className="relative w-24 h-24 rounded-[6px] overflow-hidden bg-background border border-border">
-                  <Image
-                    src={reviews[1].featuredImage}
-                    alt={reviews[1].title}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <span className="font-sans text-xs uppercase tracking-wider text-muted-foreground">{reviews[1].category}</span>
-                  <h3 className="font-display font-semibold text-xl text-foreground mt-1">{reviews[1].title}</h3>
-                </div>
-                <div className="bg-primary/10 border border-primary/20 text-primary font-display font-bold text-2xl w-14 h-14 rounded-full flex items-center justify-center">
-                  {reviews[1].overallRating.toFixed(1)}
-                </div>
-                <Link
-                  href={`/reviews/${reviews[1].slug}`}
-                  className="font-sans text-xs uppercase tracking-[0.08em] font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Read Review →
-                </Link>
-              </div>
+                    <div className="pt-6 mt-4 border-t border-border flex items-center gap-3">
+                      <button
+                        onClick={() => {
+                          if (isInCompare) {
+                            removeItem(tool.id);
+                          } else {
+                            addItem({
+                              id: tool.id,
+                              name: tool.name,
+                              slug: tool.slug,
+                              logoUrl: tool.logoUrl,
+                              category: tool.category,
+                              overallScore: tool.overallScore,
+                            });
+                          }
+                        }}
+                        className={`flex-1 font-sans text-xs font-semibold px-4 py-2.5 rounded-[6px] transition-all flex items-center justify-center gap-1.5 ${
+                          isInCompare
+                            ? "bg-secondary text-foreground border border-primary"
+                            : "bg-transparent text-foreground border border-border hover:border-primary"
+                        }`}
+                      >
+                        {isInCompare ? (
+                          <>
+                            <Check size={13} className="text-primary" />
+                            <span>Compared</span>
+                          </>
+                        ) : (
+                          <>
+                            <Layers size={13} />
+                            <span>Compare</span>
+                          </>
+                        )}
+                      </button>
+                      <Link
+                        href={`/reviews/${tool.slug}-review`}
+                        className="font-sans text-xs font-semibold bg-secondary hover:bg-border/30 text-foreground border border-border px-4 py-2.5 rounded-[6px] text-center transition-colors"
+                      >
+                        Details
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
         )}
 
-        {/* LATEST BLOG POSTS */}
-        <section className="py-20 max-w-[1280px] mx-auto px-6 md:px-20 border-b border-border">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-            <div>
-              <span className="font-sans text-xs font-semibold uppercase tracking-[0.08em] text-primary block mb-2">
-                EDITORIAL INSIGHTS
-              </span>
-              <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground">
-                Latest from the Chronicle
-              </h2>
-            </div>
-            <Link
-              href="/blog"
-              className="font-sans text-sm font-semibold text-primary hover:text-accent-hover mt-4 md:mt-0 flex items-center gap-1.5 transition-colors group"
-            >
-              Go to blog
-              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-            </Link>
-          </div>
-
-          {posts.length === 0 ? (
-            <div className="text-center py-20 bg-secondary border border-border rounded-[6px]">
-              <p className="font-body text-muted-foreground">No blog articles published yet.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {posts.map((post) => (
-                <article key={post.id} className="space-y-4 group">
-                  <div className="relative aspect-[16/10] overflow-hidden rounded-[6px] bg-secondary">
-                    <Image
-                      src={post.featuredImage}
-                      alt={post.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-[1.025]"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-primary">
-                        {post.category}
-                      </span>
-                      <span className="text-muted-foreground font-mono text-[0.75rem]">•</span>
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                      </span>
-                    </div>
-                    <h3 className="font-display font-semibold text-lg text-foreground group-hover:text-primary transition-colors leading-snug">
-                      <Link href={`/blog/${post.slug}`}>
-                        {post.title}
-                      </Link>
-                    </h3>
-                    <p className="font-body text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                      {post.excerpt || "Read our latest article exploring digital trends, tech insights, and editorial opinions."}
-                    </p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* NEWSLETTER CAPTURE */}
+        {/* 6. NEWSLETTER EMAIL CAPTURE */}
         <section id="newsletter" className="py-20 bg-secondary transition-colors duration-300">
           <div className="max-w-[1280px] mx-auto px-6 md:px-20">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-card border border-border p-8 md:p-12 rounded-[6px]">
@@ -539,40 +678,70 @@ export default function HomePageClient({ reviews, posts, categories }: HomePageC
           </div>
         </section>
 
-        {/* CATEGORY BROWSER */}
+        {/* 7. LATEST BLOG POSTS */}
         <section className="py-20 max-w-[1280px] mx-auto px-6 md:px-20">
-          <div className="text-center max-w-xl mx-auto mb-12">
-            <span className="font-sans text-xs font-semibold uppercase tracking-[0.08em] text-primary block">
-              TOPICAL TAXONOMY
-            </span>
-            <h2 className="font-display font-bold text-3xl text-foreground mt-2">
-              Browse by Interest
-            </h2>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+            <div>
+              <span className="font-sans text-xs font-semibold uppercase tracking-[0.08em] text-primary block mb-2">
+                EDITORIAL INSIGHTS
+              </span>
+              <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground">
+                Latest from the Chronicle
+              </h2>
+            </div>
+            <Link
+              href="/blog"
+              className="font-sans text-sm font-semibold text-primary hover:text-accent-hover mt-4 md:mt-0 flex items-center gap-1.5 transition-colors group"
+            >
+              Go to blog
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+            </Link>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {categories.map((cat, index) => {
-              const hueClass = categoryHues[index % categoryHues.length];
-              return (
-                <Link
-                  key={cat.id}
-                  href={`/reviews?category=${cat.id}`}
-                  className={`${hueClass} aspect-[1.5] flex flex-col justify-between p-6 rounded-[6px] transition-all duration-300 hover:scale-[1.025] hover:shadow-sm border border-transparent hover:border-border`}
-                >
-                  <span className="font-sans text-[0.7rem] uppercase tracking-[0.1em] font-semibold opacity-80">
-                    CATEGORY
-                  </span>
-                  <h3 className="font-display font-bold text-lg md:text-xl leading-tight">
-                    {cat.name}
-                  </h3>
-                </Link>
-              );
-            })}
-          </div>
+          {posts.length === 0 ? (
+            <div className="text-center py-20 bg-secondary border border-border rounded-[6px]">
+              <p className="font-body text-muted-foreground">No blog articles published yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {posts.slice(0, 3).map((post) => (
+                <article key={post.id} className="space-y-4 group">
+                  <div className="relative aspect-[16/10] overflow-hidden rounded-[6px] bg-secondary border border-border">
+                    <Image
+                      src={post.featuredImage}
+                      alt={post.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 30vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.015]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-primary">
+                        {post.category}
+                      </span>
+                      <span className="text-muted-foreground font-mono text-[0.75rem]">•</span>
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </span>
+                    </div>
+                    <h3 className="font-display font-semibold text-lg text-foreground group-hover:text-primary transition-colors leading-snug">
+                      <Link href={`/blog/${post.slug}`}>
+                        {post.title}
+                      </Link>
+                    </h3>
+                    <p className="font-body text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                      {post.excerpt}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
       </main>
 
-      {/* Editorial Footer */}
+      {/* 8. EDITORIAL FOOTER */}
       <Footer />
     </div>
   );

@@ -4,7 +4,18 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/context/AuthContext";
 import Link from "next/link";
-import { LayoutDashboard, FileText, Star, Folder, Users, LogOut } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  FileText, 
+  Star, 
+  Folder, 
+  Users, 
+  LogOut, 
+  BarChart3, 
+  Layers, 
+  Sliders, 
+  Settings 
+} from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, isAdmin, logout } = useAuth();
@@ -37,9 +48,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+    { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
     { name: "Posts", href: "/admin/posts", icon: FileText },
     { name: "Reviews", href: "/admin/reviews", icon: Star },
+    { name: "AI Tools", href: "/admin/ai-tools", icon: Layers },
+    { name: "Hero Slides", href: "/admin/hero-slides", icon: Sliders },
     { name: "Categories", href: "/admin/categories", icon: Folder },
+    { name: "Homepage Settings", href: "/admin/settings/homepage", icon: Settings },
     { name: "Subscribers", href: "/admin/subscribers", icon: Users },
   ];
 

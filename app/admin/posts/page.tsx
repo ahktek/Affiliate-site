@@ -35,7 +35,10 @@ export default function PostsManager() {
         featuredImage: p.featured_image || "",
         category: p.categories?.name || "",
         tags: p.tags || [],
-        status: p.status as "draft" | "published",
+        status: p.status as "draft" | "scheduled" | "published" | "archived",
+        scheduledAt: p.scheduled_at || "",
+        publishedAt: p.published_at || "",
+        archivedAt: p.archived_at || "",
         authorId: p.author_id || "",
         createdAt: new Date(p.created_at || Date.now()).getTime(),
         updatedAt: new Date(p.updated_at || Date.now()).getTime(),
@@ -62,6 +65,39 @@ export default function PostsManager() {
         console.error("Error deleting post:", error);
       }
     }
+  };
+
+  const renderStatusBadge = (post: any) => {
+    const status = post.status;
+    if (status === "published") {
+      return (
+        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+          Published
+        </span>
+      );
+    }
+    if (status === "scheduled") {
+      const dateStr = post.scheduledAt 
+        ? new Date(post.scheduledAt).toLocaleDateString() + " " + new Date(post.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : "";
+      return (
+        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" title={`Publishes ${dateStr}`}>
+          Publishes {dateStr.split(" ")[0]}
+        </span>
+      );
+    }
+    if (status === "archived") {
+      return (
+        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400">
+          Archived
+        </span>
+      );
+    }
+    return (
+      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
+        Draft
+      </span>
+    );
   };
 
   return (
@@ -101,13 +137,7 @@ export default function PostsManager() {
                   <TableCell className="font-medium">{post.title}</TableCell>
                   <TableCell>{post.category}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      post.status === "published" 
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
-                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                    }`}>
-                      {post.status}
-                    </span>
+                    {renderStatusBadge(post)}
                   </TableCell>
                   <TableCell>{new Date(post.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right space-x-2">

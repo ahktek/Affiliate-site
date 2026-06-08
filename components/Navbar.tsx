@@ -5,33 +5,53 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/lib/context/AuthContext";
-import { Search, Sun, Moon, Menu, X, LogOut, Settings } from "lucide-react";
+import { useCompareStore } from "@/lib/store/compareStore";
+import { Search, Sun, Moon, Menu, X, LogOut, Settings, Layers } from "lucide-react";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
   const pathname = usePathname();
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const { user, isAdmin, logout } = useAuth();
   
-  // Handle scroll class toggle
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 80) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-    
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Zustand compare tray items count
+  const compareItems = useCompareStore((state) => state.items);
+  const compareCount = compareItems.length;
 
-  // Close mobile menu on page change
+  // Scroll link hook calculations using Framer Motion
+  const { scrollY } = useScroll();
+  
+  // Scroll threshold is 60px
+  // Interpolate background opacity from 0 to 0.95, and border opacity from 0 to 1
+  const headerBg = useTransform(
+    scrollY,
+    [0, 60],
+    ["rgba(250,250,247,0)", "rgba(250,250,247,0.95)"]
+  );
+  
+  const headerBgDark = useTransform(
+    scrollY,
+    [0, 60],
+    ["rgba(20,20,18,0)", "rgba(20,20,18,0.95)"]
+  );
+
+  const headerBorderColor = useTransform(
+    scrollY,
+    [0, 60],
+    ["rgba(228,227,220,0)", "rgba(228,227,220,1)"]
+  );
+
+  const headerBorderColorDark = useTransform(
+    scrollY,
+    [0, 60],
+    ["rgba(46,46,42,0)", "rgba(46,46,42,1)"]
+  );
+
+  // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
@@ -39,17 +59,40 @@ export default function Navbar() {
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Reviews", href: "/reviews" },
+    { label: "Compare", href: "/compare" },
+    { label: "Tools", href: "/ai-tools" },
     { label: "Blog", href: "/blog" },
+    { label: "About", href: "/about" },
   ];
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: -100 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        staggerChildren: 0.06,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: -20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } },
+  };
 
   return (
     <>
-      <header
-        className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-          isScrolled
-            ? "bg-background/95 backdrop-blur-md shadow-[0_1px_0_0_hsl(var(--border))]"
-            : "bg-background"
-        }`}
+      <motion.header
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        style={{
+          backgroundColor: resolvedTheme === "dark" ? headerBgDark : headerBg,
+          borderBottomColor: resolvedTheme === "dark" ? headerBorderColorDark : headerBorderColor,
+        }}
+        className="sticky top-0 z-50 w-full border-b transition-all duration-300 backdrop-filter backdrop-blur-md"
       >
         <div className="max-w-[1280px] mx-auto px-6 md:px-20 h-20 flex items-center justify-between">
           {/* Logo - Typography wordmark in Lora 700 */}
@@ -59,19 +102,27 @@ export default function Navbar() {
 
           {/* Desktop Nav Items - Instrument Sans */}
           <nav className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`font-sans text-[0.875rem] font-medium tracking-wide transition-colors duration-200 nav-link-underline py-1 ${
-                  pathname === item.href
-                    ? "text-primary after:scale-x-100"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`font-sans text-[0.875rem] font-medium tracking-wide transition-colors duration-200 nav-link-underline py-1 flex items-center gap-1.5 ${
+                    isActive
+                      ? "text-primary after:scale-x-100"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {item.href === "/compare" && compareCount > 0 && (
+                    <span className="w-4 h-4 bg-primary text-primary-foreground font-mono text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                      {compareCount}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
             {isAdmin && (
               <Link
                 href="/admin"
@@ -82,8 +133,8 @@ export default function Navbar() {
             )}
           </nav>
 
-          {/* Right Side UI - Search + Theme + CTAs */}
-          <div className="hidden md:flex items-center space-x-6">
+          {/* Right Side UI - Search + Tray Count + Theme + CTAs */}
+          <div className="hidden md:flex items-center space-x-5">
             {/* Search Bar Toggle */}
             <div className="relative flex items-center">
               {isSearchOpen ? (
@@ -100,12 +151,12 @@ export default function Navbar() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search reviews..."
-                    className="font-sans text-[0.875rem] px-3 py-1 bg-secondary border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary w-40"
+                    placeholder="Search..."
+                    className="font-sans text-[0.875rem] px-3 py-1 bg-secondary border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary w-40 text-foreground"
                     autoFocus
                   />
                   <button type="submit" className="p-2 text-muted-foreground hover:text-foreground">
-                    <Search size={18} />
+                    <Search size={17} />
                   </button>
                   <button
                     type="button"
@@ -124,37 +175,51 @@ export default function Navbar() {
                   className="p-2 text-muted-foreground hover:text-foreground transition-colors"
                   aria-label="Search"
                 >
-                  <Search size={18} />
+                  <Search size={17} />
                 </button>
               )}
             </div>
 
+            {/* Compare Floating Count Badge (Hidden when 0) */}
+            {compareCount > 0 && (
+              <Link
+                href="/compare"
+                className="relative p-2 text-muted-foreground hover:text-foreground transition-all duration-200"
+                title="Go to Comparison Engine"
+              >
+                <Layers size={17} />
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground font-mono text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-background shadow-sm">
+                  {compareCount}
+                </span>
+              </Link>
+            )}
+
             {/* Dark Mode Toggle */}
             <button
               onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-              className="flex items-center space-x-2 px-3 py-1 font-sans text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center space-x-1.5 px-2.5 py-1 font-sans text-xs text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Toggle dark mode"
             >
               {resolvedTheme === "dark" ? (
                 <>
-                  <Sun size={15} className="text-primary" />
+                  <Sun size={14} className="text-primary" />
                   <span>Light</span>
                 </>
               ) : (
                 <>
-                  <Moon size={15} className="text-primary" />
+                  <Moon size={14} className="text-primary" />
                   <span>Dark</span>
                 </>
               )}
             </button>
 
-            {/* Subscribe CTA */}
+            {/* Admin/User CTAs */}
             {user ? (
               <button
                 onClick={() => logout()}
                 className="flex items-center gap-1.5 font-sans text-[0.875rem] font-medium text-muted-foreground hover:text-destructive transition-colors"
               >
-                <LogOut size={15} /> Sign Out
+                <LogOut size={14} /> Sign Out
               </button>
             ) : (
               <Link
@@ -173,75 +238,99 @@ export default function Navbar() {
               className="p-2 text-muted-foreground hover:text-foreground"
               aria-label="Toggle theme"
             >
-              {resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+              {resolvedTheme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Toggle menu"
             >
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Mobile Menu Fullscreen Overlay - Lora & Instrument Sans */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-background flex flex-col justify-center items-center p-8 animate-fade-in">
-          <button
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="absolute top-6 right-6 p-2 text-muted-foreground hover:text-foreground"
-            aria-label="Close menu"
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ y: "-100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "-100%" }}
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            className="fixed inset-0 z-50 bg-[#FAFAF7] dark:bg-[#141412] flex flex-col justify-center items-center p-8"
           >
-            <X size={28} />
-          </button>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="absolute top-6 right-6 p-2 text-muted-foreground hover:text-foreground"
+              aria-label="Close menu"
+            >
+              <X size={26} />
+            </button>
 
-          <nav className="flex flex-col items-center space-y-8 text-center">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="font-display font-medium text-[2rem] text-foreground hover:text-primary transition-colors duration-200"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className="font-display font-medium text-[2rem] text-primary hover:text-accent-hover transition-colors duration-200"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Admin Panel
-              </Link>
-            )}
+            <motion.nav
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="flex flex-col items-center space-y-6 text-center"
+            >
+              {navItems.map((item) => (
+                <motion.div key={item.href} variants={itemVariants}>
+                  <Link
+                    href={item.href}
+                    className="font-display font-bold text-[2rem] text-[#1A1A18] dark:text-[#F0EFEA] hover:text-primary transition-colors duration-200 flex items-center gap-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <span>{item.label}</span>
+                    {item.href === "/compare" && compareCount > 0 && (
+                      <span className="text-sm bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center font-mono font-bold">
+                        {compareCount}
+                      </span>
+                    )}
+                  </Link>
+                </motion.div>
+              ))}
+              
+              {isAdmin && (
+                <motion.div variants={itemVariants}>
+                  <Link
+                    href="/admin"
+                    className="font-display font-bold text-[2rem] text-primary hover:text-accent-hover transition-colors duration-200"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Admin Panel
+                  </Link>
+                </motion.div>
+              )}
 
-            <div className="h-[1px] w-24 bg-border my-4" />
+              <motion.div variants={itemVariants} className="h-[1px] w-24 bg-border my-4" />
 
-            {user ? (
-              <button
-                onClick={() => {
-                  logout();
-                  setIsMobileMenuOpen(false);
-                }}
-                className="font-sans text-[1rem] font-medium text-destructive"
-              >
-                Sign Out
-              </button>
-            ) : (
-              <Link
-                href="/#newsletter"
-                className="bg-primary text-primary-foreground font-sans text-[1rem] font-medium px-8 py-3 rounded-[6px] hover:bg-accent-hover transition-colors shadow-lg"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Subscribe
-              </Link>
-            )}
-          </nav>
-        </div>
-      )}
+              <motion.div variants={itemVariants}>
+                {user ? (
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="font-sans text-[1.1rem] font-medium text-destructive"
+                  >
+                    Sign Out
+                  </button>
+                ) : (
+                  <Link
+                    href="/#newsletter"
+                    className="bg-primary text-primary-foreground font-sans text-[1rem] font-medium px-8 py-3 rounded-[6px] hover:bg-accent-hover transition-colors shadow-lg"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Subscribe
+                  </Link>
+                )}
+              </motion.div>
+            </motion.nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

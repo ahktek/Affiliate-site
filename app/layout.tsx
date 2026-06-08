@@ -3,6 +3,7 @@ import { Lora, Source_Serif_4, Instrument_Sans, DM_Mono } from "next/font/google
 import { AuthProvider } from "@/lib/context/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Chatbot from "@/components/Chatbot";
+import CompareTray from "@/components/CompareTray";
 import "./globals.css";
 
 const lora = Lora({
@@ -47,6 +48,7 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
             <Chatbot />
+            <CompareTray />
           </ThemeProvider>
         </AuthProvider>
       </body>
