@@ -13,6 +13,7 @@ import { Plus, Trash, Upload, Check, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { motion } from "motion/react";
 
 // Dynamically import Quill to prevent SSR window issues
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
@@ -26,6 +27,8 @@ interface AIToolFormProps {
 export default function AIToolForm({ toolId, initialData }: AIToolFormProps) {
   const router = useRouter();
   const isEdit = !!toolId;
+
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Form State
   const [saving, setSaving] = useState(false);
@@ -74,6 +77,97 @@ export default function AIToolForm({ toolId, initialData }: AIToolFormProps) {
   // SEO
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
+
+  // Save draft to localStorage for new tools only
+  useEffect(() => {
+    if (!isEdit && typeof window !== "undefined") {
+      const draft = {
+        name,
+        slug,
+        tagline,
+        officialUrl,
+        affiliateUrl,
+        logoUrl,
+        screenshotUrls,
+        category,
+        status,
+        scheduledAt,
+        pricingModel,
+        hasFreeTier,
+        startingPrice,
+        apiAvailable,
+        overallScore,
+        accuracyScore,
+        speedScore,
+        easeOfUseScore,
+        valueScore,
+        bestFor,
+        integrations,
+        contextWindow,
+        isContextNA,
+        pros,
+        cons,
+        limitations,
+        verdict,
+        verdictSummary,
+        reviewContent,
+        metaTitle,
+        metaDescription
+      };
+      localStorage.setItem("ai-tool-form-draft", JSON.stringify(draft));
+    }
+  }, [
+    isEdit, name, slug, tagline, officialUrl, affiliateUrl, logoUrl, screenshotUrls,
+    category, status, scheduledAt, pricingModel, hasFreeTier, startingPrice, apiAvailable,
+    overallScore, accuracyScore, speedScore, easeOfUseScore, valueScore, bestFor,
+    integrations, contextWindow, isContextNA, pros, cons, limitations, verdict,
+    verdictSummary, reviewContent, metaTitle, metaDescription
+  ]);
+
+  // Restore draft on mount
+  useEffect(() => {
+    if (!isEdit && typeof window !== "undefined") {
+      const saved = localStorage.getItem("ai-tool-form-draft");
+      if (saved) {
+        try {
+          const draft = JSON.parse(saved);
+          setName(draft.name || "");
+          setSlug(draft.slug || "");
+          setTagline(draft.tagline || "");
+          setOfficialUrl(draft.officialUrl || "");
+          setAffiliateUrl(draft.affiliateUrl || "");
+          setLogoUrl(draft.logoUrl || "");
+          setScreenshotUrls(draft.screenshotUrls || []);
+          setCategory(draft.category || "Other");
+          setStatus(draft.status || "draft");
+          setScheduledAt(draft.scheduledAt || "");
+          setPricingModel(draft.pricingModel || "paid");
+          setHasFreeTier(draft.hasFreeTier || false);
+          setStartingPrice(draft.startingPrice || "");
+          setApiAvailable(draft.apiAvailable || false);
+          setOverallScore(Number(draft.overallScore) || 8.0);
+          setAccuracyScore(Number(draft.accuracyScore) || 8.0);
+          setSpeedScore(Number(draft.speedScore) || 8.0);
+          setEaseOfUseScore(Number(draft.easeOfUseScore) || 8.0);
+          setValueScore(Number(draft.valueScore) || 8.0);
+          setBestFor(draft.bestFor || []);
+          setIntegrations(draft.integrations || []);
+          setContextWindow(draft.contextWindow || "");
+          setIsContextNA(draft.isContextNA || false);
+          setPros(draft.pros || [""]);
+          setCons(draft.cons || [""]);
+          setLimitations(draft.limitations || "");
+          setVerdict(draft.verdict || "recommended");
+          setVerdictSummary(draft.verdictSummary || "");
+          setReviewContent(draft.reviewContent || "");
+          setMetaTitle(draft.metaTitle || "");
+          setMetaDescription(draft.metaDescription || "");
+        } catch (e) {
+          console.warn("Failed to parse AI Tool form draft:", e);
+        }
+      }
+    }
+  }, [isEdit]);
 
   // Load initial data for editing
   useEffect(() => {
@@ -279,11 +373,24 @@ export default function AIToolForm({ toolId, initialData }: AIToolFormProps) {
 
       if (queryErr) throw queryErr;
 
+      // Clear draft on successful save
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("ai-tool-form-draft");
+      }
+
       toast.success(isEdit ? "AI Tool updated successfully!" : "AI Tool created successfully!", { id: loadingToast });
-      router.push("/admin/ai-tools");
+      
+      setShowSuccess(true);
+      setTimeout(() => {
+        router.push("/admin/ai-tools");
+      }, 2000);
     } catch (err: any) {
       console.error("Database save error:", err);
-      toast.error("Failed to save AI Tool: " + err.message, { id: loadingToast });
+      const errorMsg = err.message || err.details || JSON.stringify(err);
+      toast.error(`Failed to save AI Tool: ${errorMsg}`, { 
+        id: loadingToast,
+        duration: 5000 
+      });
     } finally {
       setSaving(false);
     }
@@ -297,6 +404,7 @@ export default function AIToolForm({ toolId, initialData }: AIToolFormProps) {
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="max-w-5xl mx-auto p-4 space-y-8">
       
       {/* Header Panel */}
@@ -673,5 +781,38 @@ export default function AIToolForm({ toolId, initialData }: AIToolFormProps) {
       </div>
 
     </form>
+
+    {showSuccess && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center"
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", damping: 20 }}
+          className="bg-[#FAFAF7] dark:bg-[#1A1A18] p-8 rounded-[6px] border border-border shadow-2xl flex flex-col items-center text-center max-w-sm space-y-4"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center border border-green-500/30 text-green-600"
+          >
+            <Check className="w-8 h-8" strokeWidth={3} />
+          </motion.div>
+          <h3 className="font-display font-bold text-xl text-foreground">
+            {isEdit ? "Tool Updated" : "Tool Added"}
+          </h3>
+          <p className="font-sans text-xs text-muted-foreground">
+            {isEdit 
+              ? "The modifications have been securely saved to the database."
+              : "The new AI tool has been successfully created and published."}
+          </p>
+        </motion.div>
+      </motion.div>
+    )}
+    </>
   );
 }
