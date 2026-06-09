@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { motion } from "motion/react";
+import { revalidatePaths } from "@/app/actions/revalidate";
+
 
 // Dynamically import Quill to prevent SSR window issues
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
@@ -373,10 +375,14 @@ export default function AIToolForm({ toolId, initialData }: AIToolFormProps) {
 
       if (queryErr) throw queryErr;
 
+      // Revalidate cache on-demand for related pages
+      await revalidatePaths(["/", "/ai-tools", "/compare"]);
+
       // Clear draft on successful save
       if (typeof window !== "undefined") {
         localStorage.removeItem("ai-tool-form-draft");
       }
+
 
       toast.success(isEdit ? "AI Tool updated successfully!" : "AI Tool created successfully!", { id: loadingToast });
       

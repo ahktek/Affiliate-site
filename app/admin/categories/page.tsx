@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { revalidatePaths } from "@/app/actions/revalidate";
 import { Category } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -85,6 +86,8 @@ export default function CategoriesManager() {
 
       if (error) throw error;
 
+      await revalidatePaths(["/", "/reviews", "/blog", "/ai-tools"]);
+
       if (data) {
         setCategories([
           ...categories,
@@ -118,6 +121,7 @@ export default function CategoriesManager() {
       try {
         const { error } = await supabase.from("categories").delete().eq("id", id);
         if (error) throw error;
+        await revalidatePaths(["/", "/reviews", "/blog", "/ai-tools"]);
         setCategories(categories.filter(c => c.id !== id));
       } catch (error) {
         console.error("Error deleting:", error);

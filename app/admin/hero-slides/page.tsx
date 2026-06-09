@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { revalidatePaths } from "@/app/actions/revalidate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -105,6 +106,7 @@ export default function HeroSlidesManager() {
           .eq("id", slide.id)
       );
       await Promise.all(promises);
+      await revalidatePaths(["/"]);
       toast.success("Slides order updated successfully!", { id: loadingToast });
     } catch (err: any) {
       console.error("Order save error:", err);
@@ -129,6 +131,8 @@ export default function HeroSlidesManager() {
         .eq("id", slide.id);
 
       if (error) throw error;
+      
+      await revalidatePaths(["/"]);
       
       // Update local state
       setSlides(slides.map(s => s.id === slide.id ? { ...s, is_active: nextActive } : s));
@@ -173,6 +177,7 @@ export default function HeroSlidesManager() {
         .single();
 
       if (error) throw error;
+      await revalidatePaths(["/"]);
       toast.success("New slide created! Edit details in the panel.");
       fetchSlides(data.id);
     } catch (err: any) {
@@ -195,6 +200,7 @@ export default function HeroSlidesManager() {
       try {
         const { error } = await supabase.from("hero_slides").delete().eq("id", slideId);
         if (error) throw error;
+        await revalidatePaths(["/"]);
         toast.success("Slide deleted successfully.");
         fetchSlides();
       } catch (err: any) {
@@ -229,6 +235,7 @@ export default function HeroSlidesManager() {
         .eq("id", selectedSlide.id);
 
       if (error) throw error;
+      await revalidatePaths(["/"]);
       toast.success("Slide changes saved successfully!", { id: loadingToast });
       fetchSlides(selectedSlide.id);
     } catch (err: any) {

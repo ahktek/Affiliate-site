@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import Editor from "@/components/admin/Editor";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { revalidatePaths } from "@/app/actions/revalidate";
+
 
 export default function NewReviewPage() {
   const { user } = useAuth();
@@ -100,6 +102,9 @@ export default function NewReviewPage() {
       const { error } = await supabase.from("reviews").insert(newReview);
       if (error) throw error;
       
+      // Revalidate cache on-demand for related pages
+      await revalidatePaths(["/", "/reviews", `/reviews/${slug}`]);
+
       router.push("/admin/reviews");
     } catch (error: any) {
       console.error("Error creating review:", error);

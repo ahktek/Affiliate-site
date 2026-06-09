@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { revalidatePaths } from "@/app/actions/revalidate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -222,6 +223,9 @@ export default function HomepageSettings() {
       });
 
       await Promise.all(promises);
+
+      // Revalidate cache on-demand for home and compare pages
+      await revalidatePaths(["/", "/compare"]);
 
       toast.success("Homepage configuration saved successfully!", { id: loadingToast });
       loadData();
