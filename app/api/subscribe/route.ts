@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
+
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if email already exists
-    const { data: existing } = await supabase
+    const { data: existing } = await supabaseAdmin
       .from("subscribers")
       .select("id")
       .eq("email", email)
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Save to Supabase
-    const { error } = await supabase.from("subscribers").insert({
+    const { error } = await supabaseAdmin.from("subscribers").insert({
       email,
       name: "", // Can capture name later if needed
       source,
