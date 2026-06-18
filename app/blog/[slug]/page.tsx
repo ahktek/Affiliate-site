@@ -6,7 +6,6 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
-import NewsletterForm from "@/components/ui/NewsletterForm";
 import { ArrowLeft } from "lucide-react";
 
 export const revalidate = 3600;
@@ -233,7 +232,24 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               <p className="font-body text-xs text-muted-foreground mb-4 max-w-md leading-relaxed">
                 Subscribe to our newsletter to get more insights like this delivered to your inbox once a week.
               </p>
-              <NewsletterForm source={`blog-${post.slug}`} showName={false} layout="blog" />
+              <form action="/api/subscribe" method="POST" className="flex flex-col sm:flex-row sm:items-end gap-4">
+                <input type="hidden" name="source" value={`blog-${post.slug}`} />
+                <div className="flex-1">
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Your email address"
+                    className="w-full font-sans text-xs bg-transparent border-b border-border-emphasis pb-2.5 pt-2 px-1 text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="bg-primary text-primary-foreground font-sans text-xs font-semibold px-5 py-2.5 h-[36px] rounded-[6px] hover:bg-accent-hover hover:translate-y-[-1px] transition-all duration-200"
+                >
+                  Subscribe
+                </button>
+              </form>
             </div>
           </div>
 
