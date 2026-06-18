@@ -13,7 +13,7 @@ import { Plus, Trash, Upload, Check, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { revalidatePaths } from "@/app/actions/revalidate";
 
 

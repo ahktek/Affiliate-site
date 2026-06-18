@@ -89,6 +89,7 @@ interface HomePageClientProps {
 }
 
 export default function HomePageClient({
+  heroSlides,
   reviews,
   posts,
   categories,
@@ -166,7 +167,7 @@ export default function HomePageClient({
 
       <main className="flex-1">
         {/* 1. HERO SLIDER */}
-        <HeroSlider />
+        <HeroSlider initialSlides={heroSlides} />
 
         {/* 2. EDITOR'S PICKS GRID BOX */}
         <section id="editors-picks" className="py-20 max-w-[1280px] mx-auto px-6 md:px-20 border-b border-border">

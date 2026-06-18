@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { SlideProps } from "./types";
 
 export default function SlideTypographic({ data, isActive }: SlideProps) {

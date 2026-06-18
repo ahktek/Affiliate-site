@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useSwipeable } from "react-swipeable";
 import { SlideData } from "./slides/types";
 import SlideEditorial from "./slides/SlideEditorial";
@@ -46,8 +46,36 @@ const DEFAULT_SLIDES: SlideData[] = [
   }
 ];
 
-export default function HeroSlider() {
-  const [slides, setSlides] = useState<SlideData[]>(DEFAULT_SLIDES);
+interface HeroSliderProps {
+  initialSlides?: any[];
+}
+
+export default function HeroSlider({ initialSlides }: HeroSliderProps) {
+  // Map raw slides into SlideData shape
+  const getMappedSlides = (rawSlides: any[]): SlideData[] => {
+    if (!rawSlides || rawSlides.length === 0) return DEFAULT_SLIDES;
+    return rawSlides.map((item: any, idx: number) => {
+      let defaultTag = "No. 1 Trusted AI Review Source";
+      if (idx % 3 === 1) defaultTag = "Compare 40+ AI Tools";
+      if (idx % 3 === 2) defaultTag = "This Month's Editor's Pick";
+
+      return {
+        headline: item.headline,
+        subline: item.subline || "",
+        tag: defaultTag,
+        ctaPrimaryText: item.cta_primary_text || "Learn More",
+        ctaPrimaryUrl: item.cta_primary_url || "/",
+        ctaSecondaryText: item.cta_secondary_text || "",
+        ctaSecondaryUrl: item.cta_secondary_url || "",
+        imageUrl: item.image_url,
+        imageAlt: item.image_alt || "Editorial product review image",
+        overlayOpacity: Number(item.overlay_opacity) || 0.4,
+        overlayColor: item.overlay_color || "#000000",
+      };
+    });
+  };
+
+  const [slides, setSlides] = useState<SlideData[]>(() => getMappedSlides(initialSlides || []));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<"next" | "prev">("next");
   const [isHovered, setIsHovered] = useState(false);
@@ -138,16 +166,19 @@ export default function HeroSlider() {
   }, [currentIndex, isHovered, isVisible, slides.length]);
 
   const handleNext = () => {
+    if (slides.length === 0) return;
     setDirection("next");
     setCurrentIndex((prev) => (prev + 1) % slides.length);
   };
 
   const handlePrev = () => {
+    if (slides.length === 0) return;
     setDirection("prev");
     setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
   const handleJump = (index: number) => {
+    if (slides.length === 0) return;
     setDirection(index > currentIndex ? "next" : "prev");
     setCurrentIndex(index);
   };
