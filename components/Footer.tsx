@@ -2,12 +2,34 @@
 
 import React from "react";
 import Link from "next/link";
+import { NewsletterForm } from "@/components/ui/NewsletterForm";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-secondary border-t border-border mt-20 transition-colors duration-300">
+    <div className="mt-20">
+      {/* Newsletter signup option just above the footer */}
+      <section className="bg-background transition-colors duration-300">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-20 pb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-card border border-border p-8 md:p-12 rounded-[6px]">
+            <div className="lg:col-span-6 space-y-4">
+              <h3 className="font-display font-medium italic text-2xl md:text-3xl text-foreground">
+                Stay ahead of every buying decision.
+              </h3>
+              <p className="font-body text-sm text-muted-foreground max-w-md leading-relaxed">
+                One email per week. Honest testing, software roundups, and exclusive promo codes. No spam, ever. Unsubscribe instantly.
+              </p>
+            </div>
+
+            <div className="lg:col-span-6">
+              <NewsletterForm source="footer" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer className="bg-secondary border-t border-border transition-colors duration-300">
       <div className="max-w-[1280px] mx-auto px-6 md:px-20 py-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
           {/* Logo and About Section (6 cols) */}
@@ -89,5 +111,6 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+    </div>
   );
 }

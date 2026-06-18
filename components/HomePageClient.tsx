@@ -672,7 +672,7 @@ export default function HomePageClient({
                         )}
                       </button>
                       <Link
-                        href={`/reviews/${tool.slug}-review`}
+                        href={`/reviews/${tool.slug}`}
                         className="font-sans text-xs font-semibold bg-secondary hover:bg-border/30 text-foreground border border-border px-4 py-2.5 rounded-[6px] text-center transition-colors"
                       >
                         Details
@@ -685,25 +685,7 @@ export default function HomePageClient({
           </section>
         )}
 
-        {/* 6. NEWSLETTER EMAIL CAPTURE */}
-        <section id="newsletter" className="py-20 bg-secondary transition-colors duration-300">
-          <div className="max-w-[1280px] mx-auto px-6 md:px-20">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-card border border-border p-8 md:p-12 rounded-[6px]">
-              <div className="lg:col-span-6 space-y-4">
-                <h3 className="font-display font-medium italic text-2xl md:text-3xl text-foreground">
-                  Stay ahead of every buying decision.
-                </h3>
-                <p className="font-body text-sm text-muted-foreground max-w-md leading-relaxed">
-                  One email per week. Honest testing, software roundups, and exclusive promo codes. No spam, ever. Unsubscribe instantly.
-                </p>
-              </div>
 
-              <div className="lg:col-span-6">
-                <NewsletterForm source="homepage" />
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* 7. LATEST BLOG POSTS */}
         <section className="py-20 max-w-[1280px] mx-auto px-6 md:px-20">
