@@ -6,6 +6,7 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HeroSlider from "@/components/HeroSlider";
+import NewsletterForm from "@/components/ui/NewsletterForm";
 import { useCompareStore } from "@/lib/store/compareStore";
 import { 
   Star, 
@@ -436,8 +437,8 @@ export default function HomePageClient({
           </section>
         )}
 
-        {/* 4. LATEST REVIEWS HORIZONTAL SCROLL STRIP */}
-        <section className="py-20 border-b border-border overflow-hidden">
+        {/* 4. LATEST REVIEWS GRID */}
+        <section className="py-20 border-b border-border">
           <div className="max-w-[1280px] mx-auto px-6 md:px-20">
             <div className="flex items-end justify-between mb-12">
               <div>
@@ -448,40 +449,14 @@ export default function HomePageClient({
                   Latest Software Reviews
                 </h2>
               </div>
-              <div className="flex items-center space-x-3 text-muted-foreground select-none">
-                <button
-                  onClick={() => {
-                    const scrollContainer = document.getElementById("reviews-scroll");
-                    if (scrollContainer) scrollContainer.scrollBy({ left: -320, behavior: "smooth" });
-                  }}
-                  className="p-2.5 rounded-full border border-border hover:bg-secondary hover:text-foreground transition-all duration-200"
-                  aria-label="Scroll left"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <button
-                  onClick={() => {
-                    const scrollContainer = document.getElementById("reviews-scroll");
-                    if (scrollContainer) scrollContainer.scrollBy({ left: 320, behavior: "smooth" });
-                  }}
-                  className="p-2.5 rounded-full border border-border hover:bg-secondary hover:text-foreground transition-all duration-200"
-                  aria-label="Scroll right"
-                >
-                  <ChevronRight size={18} />
-                </button>
-              </div>
             </div>
 
-            {/* Horizontal Scroll Strip Container */}
-            <div
-              id="reviews-scroll"
-              className="flex gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x -mx-6 px-6 md:mx-0 md:px-0"
-              style={{ scrollSnapType: "x mandatory" }}
-            >
-              {reviews.map((review) => (
+            {/* Grid Container */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {reviews.slice(0, 3).map((review) => (
                 <div
                   key={review.id}
-                  className="flex-shrink-0 w-[290px] md:w-[330px] snap-start bg-card border border-border rounded-[6px] p-5 space-y-4 hover:border-primary/30 transition-all duration-300 flex flex-col justify-between"
+                  className="bg-card border border-border rounded-[6px] p-5 space-y-4 hover:border-primary/30 transition-all duration-300 flex flex-col justify-between"
                 >
                   <div className="space-y-4">
                     <div className="relative aspect-[16/10] overflow-hidden rounded-[4px] bg-secondary group">
@@ -489,7 +464,7 @@ export default function HomePageClient({
                         src={review.featuredImage}
                         alt={review.title}
                         fill
-                        sizes="(max-width: 768px) 290px, 330px"
+                        sizes="(max-width: 768px) 100vw, 30vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                       />
                       <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-[4px] font-mono text-xs font-bold text-white flex items-center gap-0.5">
@@ -522,6 +497,17 @@ export default function HomePageClient({
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Explore More Button under Carousel/Grid */}
+            <div className="mt-12 text-center">
+              <Link
+                href="/reviews"
+                className="inline-flex items-center gap-2 bg-secondary hover:bg-border/30 text-foreground border border-border font-sans text-sm font-semibold px-8 py-3.5 rounded-[6px] transition-all hover:translate-y-[-1px]"
+              >
+                <span>View All Reviews</span>
+                <ArrowRight size={15} />
+              </Link>
             </div>
           </div>
         </section>
@@ -648,31 +634,7 @@ export default function HomePageClient({
               </div>
 
               <div className="lg:col-span-6">
-                <form action="/api/subscribe" method="POST" className="flex flex-col sm:flex-row sm:items-end gap-6 w-full">
-                  <div className="flex-1 flex flex-col space-y-1">
-                    <input
-                      type="text"
-                      name="name"
-                      placeholder="Your name"
-                      className="w-full font-sans text-sm bg-transparent border-b border-border-emphasis pb-3 pt-2 px-1 text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-                  <div className="flex-1 flex flex-col space-y-1">
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Your email address"
-                      required
-                      className="w-full font-sans text-sm bg-transparent border-b border-border-emphasis pb-3 pt-2 px-1 text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="bg-primary text-primary-foreground font-sans text-sm font-medium px-6 py-3 h-[42px] rounded-[6px] hover:bg-accent-hover hover:translate-y-[-1px] transition-all duration-200 shadow-[0_4px_12px_rgba(200,80,42,0.18)] whitespace-nowrap self-stretch sm:self-auto"
-                  >
-                    Get Weekly Picks →
-                  </button>
-                </form>
+                <NewsletterForm source="homepage" showName={true} layout="homepage" />
               </div>
             </div>
           </div>

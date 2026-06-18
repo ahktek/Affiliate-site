@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
     const resend = resendApiKey ? new Resend(resendApiKey) : null;
     const formData = await req.formData();
     const email = (formData.get("email") as string || "").trim();
+    const name = (formData.get("name") as string || "").trim();
     const source = (formData.get("source") as string) || "homepage";
 
     if (!email) {
@@ -27,14 +28,13 @@ export async function POST(req: NextRequest) {
     }
     
     if (existing) {
-      // Redirect back with success (even if duplicate, don't leak info or just say success)
-      return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
+      return NextResponse.json({ success: true, alreadySubscribed: true });
     }
 
     // Save to Supabase
     const { error } = await supabaseAdmin.from("subscribers").insert({
       email,
-      name: "", // Can capture name later if needed
+      name,
       source,
       timestamp: Date.now(),
       is_verified: false
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     if (error) {
       // Handle Postgres unique constraint violation (code 23505) gracefully
       if (error.code === "23505") {
-        return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
+        return NextResponse.json({ success: true, alreadySubscribed: true });
       }
       throw error;
     }
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Subscribe Error:", error);
     // Double-check duplicate error in catch block as safety net
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
       error.message?.includes("unique constraint") || 
       error.message?.includes("already exists")
     ) {
-      return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
+      return NextResponse.json({ success: true, alreadySubscribed: true });
     }
     return NextResponse.json(
       { error: "Failed to subscribe: " + (error.message || error.details || JSON.stringify(error)) },
