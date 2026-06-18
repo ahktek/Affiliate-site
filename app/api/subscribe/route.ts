@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     
     if (existing) {
       // Redirect back with success (even if duplicate, don't leak info or just say success)
-      return NextResponse.redirect(new URL("/?subscribed=true", req.url));
+      return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
     }
 
     // Save to Supabase
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    return NextResponse.redirect(new URL("/?subscribed=true", req.url));
+    return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
   } catch (error: any) {
     console.error("Subscribe Error:", error);
     return NextResponse.json({ error: "Failed to subscribe" }, { status: 500 });
