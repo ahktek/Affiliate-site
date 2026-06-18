@@ -46,6 +46,7 @@ export default async function SingleReviewPage({ params }: { params: { slug: str
     excerpt: data.excerpt || "",
     featuredImage: data.featured_image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
     category: data.categories?.name || "Uncategorized",
+    categorySlug: data.categories?.slug || "",
     categoryId: data.category_id,
     overallRating: (Number(data.overall_rating) || 0) * 2,
     scores: data.scores || {},
@@ -190,9 +191,18 @@ export default async function SingleReviewPage({ params }: { params: { slug: str
               <span>Back to Reviews</span>
             </Link>
 
-            <div className="editorial-tag">
-              {review.category}
-            </div>
+            {review.categorySlug ? (
+              <Link
+                href={`/category/${review.categorySlug}`}
+                className="editorial-tag hover:text-primary transition-colors duration-200"
+              >
+                {review.category}
+              </Link>
+            ) : (
+              <div className="editorial-tag">
+                {review.category}
+              </div>
+            )}
 
             <h1 className="font-display font-bold text-3xl md:text-[2.50rem] leading-[1.15] tracking-tight text-foreground">
               {review.title} Review

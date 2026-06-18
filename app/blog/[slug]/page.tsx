@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   const { data } = await supabase
     .from("posts")
-    .select("*, categories(name)")
+    .select("*, categories(name, slug)")
     .eq("slug", params.slug)
     .maybeSingle();
   
@@ -48,6 +48,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     excerpt: data.excerpt || "",
     featuredImage: data.featured_image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
     category: data.categories?.name || "Uncategorized",
+    categorySlug: data.categories?.slug || "",
     tags: data.tags || [],
     status: data.status,
     authorId: data.author_id,
@@ -145,9 +146,18 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               <span>Back to Blog</span>
             </Link>
 
-            <div className="editorial-tag">
-              {post.category}
-            </div>
+            {post.categorySlug ? (
+              <Link
+                href={`/category/${post.categorySlug}`}
+                className="editorial-tag hover:text-primary transition-colors duration-200"
+              >
+                {post.category}
+              </Link>
+            ) : (
+              <div className="editorial-tag">
+                {post.category}
+              </div>
+            )}
 
             <h1 className="font-display font-bold text-3xl md:text-[2.50rem] leading-[1.15] tracking-tight text-foreground">
               {post.title}

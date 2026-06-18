@@ -10,6 +10,17 @@ interface AIToolsClientProps {
   initialTools: any[];
 }
 
+const categorySlugMap: Record<string, string> = {
+  "Coding": "ai-code-assistants",
+  "Image Gen": "ai-image-generators",
+  "Video": "ai-image-generators",
+  "Audio": "ai-image-generators",
+  "Writing": "ai-writing-assistants",
+  "Research": "ai-chatbots",
+  "Productivity": "ai-chatbots",
+  "Other": "ai-chatbots"
+};
+
 export default function AIToolsClient({ initialTools }: AIToolsClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -222,9 +233,18 @@ export default function AIToolsClient({ initialTools }: AIToolsClientProps) {
                       
                       {/* Name and Tagline */}
                       <div>
-                        <span className="font-sans text-[10px] font-bold text-[#C8502A] uppercase tracking-wider">
-                          {tool.category}
-                        </span>
+                        {categorySlugMap[tool.category] ? (
+                          <Link
+                            href={`/category/${categorySlugMap[tool.category]}`}
+                            className="font-sans text-[10px] font-bold text-[#C8502A] uppercase tracking-wider hover:text-accent-hover transition-colors duration-200"
+                          >
+                            {tool.category}
+                          </Link>
+                        ) : (
+                          <span className="font-sans text-[10px] font-bold text-[#C8502A] uppercase tracking-wider">
+                            {tool.category}
+                          </span>
+                        )}
                         <h3 className="font-display font-semibold text-base text-foreground mt-0.5 leading-snug">
                           {tool.name}
                         </h3>

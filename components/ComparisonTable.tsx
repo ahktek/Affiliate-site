@@ -24,9 +24,10 @@ interface Product {
 interface ComparisonTableProps {
   currentProduct: Product;
   comparisonProducts: Product[];
+  hideCurrentBadge?: boolean;
 }
 
-export default function ComparisonTable({ currentProduct, comparisonProducts }: ComparisonTableProps) {
+export default function ComparisonTable({ currentProduct, comparisonProducts, hideCurrentBadge = false }: ComparisonTableProps) {
   // Combine current product and comparison products (max 4 total)
   const products = [currentProduct, ...comparisonProducts].slice(0, 4);
 
@@ -117,7 +118,7 @@ export default function ComparisonTable({ currentProduct, comparisonProducts }: 
                       <Link href={`/reviews/${product.slug}`} className="font-display text-sm font-bold text-foreground hover:text-primary transition-colors line-clamp-1">
                         {product.title}
                       </Link>
-                      {isCurrent && (
+                      {isCurrent && !hideCurrentBadge && (
                         <span className="inline-block bg-accent-light text-primary text-[0.65rem] font-sans font-medium px-2 py-0.25 rounded-[3px]">
                           This Review
                         </span>
@@ -173,9 +174,9 @@ export default function ComparisonTable({ currentProduct, comparisonProducts }: 
                 return (
                   <td key={`cta-${product.id}`} className="p-4 text-center">
                     <a
-                      href={cta.url}
-                      target={cta.url.startsWith("http") ? "_blank" : "_self"}
-                      rel="noopener noreferrer nofollow"
+                      href={`/go/${product.slug}`}
+                      target="_blank"
+                      rel="sponsored noopener"
                       className="inline-flex items-center justify-center gap-1.5 bg-primary text-primary-foreground font-sans text-xs font-semibold px-4 py-2 rounded-[6px] hover:bg-accent-hover hover:translate-y-[-1px] active:translate-y-[0px] shadow-sm transition-all duration-150 w-full max-w-[140px]"
                     >
                       <span>{cta.label}</span>

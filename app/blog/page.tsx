@@ -14,7 +14,7 @@ export const metadata = {
 export default async function BlogListingPage() {
   const { data } = await supabase
     .from("posts")
-    .select("*, categories(name)")
+    .select("*, categories(name, slug)")
     .eq("status", "published")
     .order("created_at", { ascending: false });
     
@@ -26,6 +26,7 @@ export default async function BlogListingPage() {
     excerpt: p.excerpt,
     featuredImage: p.featured_image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
     category: p.categories?.name || "Uncategorized",
+    categorySlug: p.categories?.slug || "",
     tags: p.tags,
     status: p.status,
     authorId: p.author_id,
@@ -84,9 +85,15 @@ export default async function BlogListingPage() {
                     <div className="flex-1 flex flex-col justify-between space-y-4">
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <span className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-primary">
-                            {post.category}
-                          </span>
+                          {post.categorySlug ? (
+                            <Link href={`/category/${post.categorySlug}`} className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-primary hover:text-[#A83E1F] transition-colors duration-200">
+                              {post.category}
+                            </Link>
+                          ) : (
+                            <span className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-primary">
+                              {post.category}
+                            </span>
+                          )}
                           <span className="text-muted-foreground font-mono text-[0.75rem]">•</span>
                           <span className="font-mono text-xs text-muted-foreground">
                             {new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
@@ -120,9 +127,15 @@ export default async function BlogListingPage() {
                   >
                     <div className="space-y-4">
                       <div className="flex items-center space-x-2">
-                        <span className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-primary">
-                          {post.category}
-                        </span>
+                        {post.categorySlug ? (
+                          <Link href={`/category/${post.categorySlug}`} className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-primary hover:text-[#A83E1F] transition-colors duration-200">
+                            {post.category}
+                          </Link>
+                        ) : (
+                          <span className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-primary">
+                            {post.category}
+                          </span>
+                        )}
                         <span className="text-muted-foreground font-mono text-[0.75rem]">•</span>
                         <span className="font-mono text-xs text-muted-foreground">
                           {new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}

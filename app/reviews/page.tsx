@@ -15,7 +15,7 @@ export const metadata = {
 export default async function ReviewsListingPage() {
   const { data } = await supabase
     .from("reviews")
-    .select("*, categories(name)")
+    .select("*, categories(name, slug)")
     .eq("status", "published")
     .order("created_at", { ascending: false });
     
@@ -27,6 +27,7 @@ export default async function ReviewsListingPage() {
     excerpt: r.excerpt,
     featuredImage: r.featured_image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
     category: r.categories?.name || "Uncategorized",
+    categorySlug: r.categories?.slug || "",
     overallRating: (Number(r.overall_rating) || 0) * 2,
     scores: r.scores,
     pros: r.pros,
@@ -94,9 +95,15 @@ export default async function ReviewsListingPage() {
                   <div className="flex-1 flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
-                        <span className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-primary">
-                          {review.category}
-                        </span>
+                        {review.categorySlug ? (
+                          <Link href={`/category/${review.categorySlug}`} className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-primary hover:text-[#A83E1F] transition-colors duration-200">
+                            {review.category}
+                          </Link>
+                        ) : (
+                          <span className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-primary">
+                            {review.category}
+                          </span>
+                        )}
                         <span className="text-muted-foreground font-mono text-[0.75rem]">•</span>
                         <span className="font-mono text-xs text-muted-foreground">
                           Published {new Date(review.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}

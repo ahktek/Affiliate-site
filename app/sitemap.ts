@@ -30,6 +30,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
+  // Fetch all categories
+  const { data: categoriesData } = await supabase
+    .from("categories")
+    .select("slug, created_at");
+
+  const categories = (categoriesData || []).map(c => ({
+    url: `${baseUrl}/category/${c.slug}`,
+    lastModified: new Date(c.created_at || new Date()),
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }));
+
   return [
     {
       url: baseUrl,
@@ -49,6 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 0.9,
     },
+    ...categories,
     ...posts,
     ...reviews,
   ];
