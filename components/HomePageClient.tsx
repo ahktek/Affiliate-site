@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HeroSlider from "@/components/HeroSlider";
+import { NewsletterForm } from "@/components/ui/NewsletterForm";
 import { useCompareStore } from "@/lib/store/compareStore";
 import { 
   Star, 
@@ -98,6 +99,39 @@ export default function HomePageClient({
   const addItem = useCompareStore((state) => state.addItem);
   const removeItem = useCompareStore((state) => state.removeItem);
   const compareItems = useCompareStore((state) => state.items);
+
+  const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+
+  const handleReviewsScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const scrollLeft = container.scrollLeft;
+    const maxScroll = container.scrollWidth - container.clientWidth;
+    if (maxScroll <= 0) return;
+    
+    // Width of a card + gap.
+    // md:w-[330px], gap-6 => 354px. Mobile: w-[290px], gap-6 => 314px.
+    const isMobile = window.innerWidth < 768;
+    const cardStep = isMobile ? 314 : 354;
+    
+    const newIndex = Math.min(
+      reviews.length - 1,
+      Math.max(0, Math.round(scrollLeft / cardStep))
+    );
+    
+    if (newIndex !== activeReviewIndex) {
+      setActiveReviewIndex(newIndex);
+    }
+  };
+
+  const scrollToReview = (index: number) => {
+    const container = document.getElementById("reviews-scroll");
+    if (container) {
+      const isMobile = window.innerWidth < 768;
+      const cardStep = isMobile ? 314 : 354;
+      container.scrollTo({ left: index * cardStep, behavior: "smooth" });
+      setActiveReviewIndex(index);
+    }
+  };
 
   // Stagger animation container variants
   const gridContainerVariants = {
@@ -448,33 +482,12 @@ export default function HomePageClient({
                   Latest Software Reviews
                 </h2>
               </div>
-              <div className="flex items-center space-x-3 text-muted-foreground select-none">
-                <button
-                  onClick={() => {
-                    const scrollContainer = document.getElementById("reviews-scroll");
-                    if (scrollContainer) scrollContainer.scrollBy({ left: -320, behavior: "smooth" });
-                  }}
-                  className="p-2.5 rounded-full border border-border hover:bg-secondary hover:text-foreground transition-all duration-200"
-                  aria-label="Scroll left"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <button
-                  onClick={() => {
-                    const scrollContainer = document.getElementById("reviews-scroll");
-                    if (scrollContainer) scrollContainer.scrollBy({ left: 320, behavior: "smooth" });
-                  }}
-                  className="p-2.5 rounded-full border border-border hover:bg-secondary hover:text-foreground transition-all duration-200"
-                  aria-label="Scroll right"
-                >
-                  <ChevronRight size={18} />
-                </button>
-              </div>
             </div>
-
+ 
             {/* Horizontal Scroll Strip Container */}
             <div
               id="reviews-scroll"
+              onScroll={handleReviewsScroll}
               className="flex gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x -mx-6 px-6 md:mx-0 md:px-0"
               style={{ scrollSnapType: "x mandatory" }}
             >
@@ -508,7 +521,7 @@ export default function HomePageClient({
                       </p>
                     </div>
                   </div>
-
+ 
                   <div className="pt-4 border-t border-border flex justify-between items-center">
                     <span className="font-mono text-[10px] text-muted-foreground">
                       {new Date(review.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
@@ -523,6 +536,44 @@ export default function HomePageClient({
                 </div>
               ))}
             </div>
+
+            {/* Pagination Controls below the carousel */}
+            {reviews.length > 0 && (
+              <div className="flex justify-center items-center gap-4 mt-8 select-none">
+                <button
+                  onClick={() => scrollToReview(activeReviewIndex - 1)}
+                  disabled={activeReviewIndex === 0}
+                  className="p-2.5 rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:hover:bg-card disabled:hover:text-muted-foreground transition-all duration-200"
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {reviews.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => scrollToReview(idx)}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        idx === activeReviewIndex
+                          ? "bg-primary w-4"
+                          : "bg-border hover:bg-border-emphasis"
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => scrollToReview(activeReviewIndex + 1)}
+                  disabled={activeReviewIndex === reviews.length - 1}
+                  className="p-2.5 rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:hover:bg-card disabled:hover:text-muted-foreground transition-all duration-200"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
           </div>
         </section>
 
@@ -648,31 +699,7 @@ export default function HomePageClient({
               </div>
 
               <div className="lg:col-span-6">
-                <form action="/api/subscribe" method="POST" className="flex flex-col sm:flex-row sm:items-end gap-6 w-full">
-                  <div className="flex-1 flex flex-col space-y-1">
-                    <input
-                      type="text"
-                      name="name"
-                      placeholder="Your name"
-                      className="w-full font-sans text-sm bg-transparent border-b border-border-emphasis pb-3 pt-2 px-1 text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-                  <div className="flex-1 flex flex-col space-y-1">
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Your email address"
-                      required
-                      className="w-full font-sans text-sm bg-transparent border-b border-border-emphasis pb-3 pt-2 px-1 text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="bg-primary text-primary-foreground font-sans text-sm font-medium px-6 py-3 h-[42px] rounded-[6px] hover:bg-accent-hover hover:translate-y-[-1px] transition-all duration-200 shadow-[0_4px_12px_rgba(200,80,42,0.18)] whitespace-nowrap self-stretch sm:self-auto"
-                  >
-                    Get Weekly Picks →
-                  </button>
-                </form>
+                <NewsletterForm source="homepage" />
               </div>
             </div>
           </div>

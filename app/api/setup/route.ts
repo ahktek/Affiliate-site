@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
       const reviews = [
         {
           title: "Cursor AI",
-          slug: "cursor-ai-review",
+          slug: "cursor-ai",
           excerpt: "An in-depth look at Cursor, the fork of VS Code that integrates AI directly into your editor workflow.",
           content: `
             <h2>Why Cursor is changing the developer workflow</h2>
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
           `,
           featured_image: "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&q=80&w=800",
           category_id: "10000000-0000-0000-0000-000000000001",
-          overall_rating: 9.2,
+          overall_rating: 4.6,
           scores: { performance: 9.5, value: 9.0, design: 9.5, easeOfUse: 9.0 },
           pros: [
             "Composer mode edits multiple files simultaneously",
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
         },
         {
           title: "Claude 3.5 Sonnet",
-          slug: "claude-3-5-sonnet-review",
+          slug: "claude-sonnet",
           excerpt: "Anthropic's latest model raises the bar for reasoning, coding assistance, and natural writing tone.",
           content: `
             <h2>A Leap Forward in Cognitive Performance</h2>
@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
           `,
           featured_image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=800",
           category_id: "40000000-0000-0000-0000-000000000004",
-          overall_rating: 9.4,
+          overall_rating: 4.7,
           scores: { performance: 9.8, value: 9.2, design: 9.0, easeOfUse: 9.5 },
           pros: [
             "State-of-the-art coding and math reasoning",
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
         },
         {
           title: "Midjourney v6",
-          slug: "midjourney-v6-review",
+          slug: "midjourney-v6",
           excerpt: "We review the newest Midjourney release, testing its photorealism, text rendering, and prompt accuracy.",
           content: `
             <h2>Next-Generation Generative Photography</h2>
@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
           `,
           featured_image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800",
           category_id: "20000000-0000-0000-0000-000000000002",
-          overall_rating: 8.9,
+          overall_rating: 4.5,
           scores: { performance: 9.6, value: 8.5, design: 9.0, easeOfUse: 7.5 },
           pros: [
             "Stunning photorealistic details and camera matching",
@@ -202,7 +202,7 @@ export async function POST(req: NextRequest) {
         },
         {
           title: "Jasper AI",
-          slug: "jasper-ai-review",
+          slug: "jasper-ai",
           excerpt: "An in-depth review of the enterprise copywriting platform designed to scale marketing content.",
           content: `
             <h2>Enterprise Brand Alignment</h2>
@@ -212,7 +212,7 @@ export async function POST(req: NextRequest) {
           `,
           featured_image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&q=80&w=800",
           category_id: "30000000-0000-0000-0000-000000000003",
-          overall_rating: 8.1,
+          overall_rating: 4.1,
           scores: { performance: 8.0, value: 7.5, design: 8.5, easeOfUse: 8.5 },
           pros: [
             "Excellent brand voice modeling and campaign assets",
@@ -230,7 +230,7 @@ export async function POST(req: NextRequest) {
         },
         {
           title: "ChatGPT Plus",
-          slug: "chatgpt-plus-review",
+          slug: "chatgpt-plus",
           excerpt: "Does the $20 premium plan still hold value in a highly competitive conversational AI market?",
           content: `
             <h2>The Conversational Benchmark</h2>
@@ -240,7 +240,7 @@ export async function POST(req: NextRequest) {
           `,
           featured_image: "https://images.unsplash.com/photo-1531747118685-ca8fa6e08806?auto=format&fit=crop&q=80&w=800",
           category_id: "40000000-0000-0000-0000-000000000004",
-          overall_rating: 8.8,
+          overall_rating: 4.4,
           scores: { performance: 9.0, value: 8.5, design: 9.0, easeOfUse: 9.0 },
           pros: [
             "Advanced voice mode feels incredibly realistic",
@@ -257,8 +257,64 @@ export async function POST(req: NextRequest) {
           status: "published"
         },
         {
+          title: "v0 by Vercel",
+          slug: "v0-vercel",
+          excerpt: "We review Vercel's generative UI assistant that translates prompt descriptions to beautiful React code.",
+          content: `
+            <h2>Generative Frontend Development</h2>
+            <p>v0 by Vercel has emerged as the premier tool for generating frontend layouts. By combining LLM logic with high-quality React, Tailwind CSS, and shadcn/ui components, v0 builds fully interactive, modern interfaces in a matter of seconds.</p>
+            <h3>From Prompts to Code</h3>
+            <p>You can input raw text descriptions, wireframe sketches, or screenshots, and v0 outputs complete, drop-in React code. It supports multiple versions and iterations, allowing developers to refine components step-by-step.</p>
+          `,
+          featured_image: "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&q=80&w=800",
+          category_id: "10000000-0000-0000-0000-000000000001",
+          overall_rating: 4.6,
+          scores: { performance: 9.0, value: 9.0, design: 9.5, easeOfUse: 9.5 },
+          pros: [
+            "Generates modern, ready-to-run React/Tailwind code",
+            "Seamless integration with shadcn/ui library",
+            "Accepts image mockups and sketches as visual input",
+            "Interactive live previews for fast testing"
+          ],
+          cons: [
+            "Mainly limited to frontend interface design, no backend logical scripts",
+            "Advanced generation features consume credits quickly"
+          ],
+          cta_links: [{ label: "Try v0.dev", url: "https://v0.dev" }],
+          compare_with: [],
+          status: "published"
+        },
+        {
+          title: "Perplexity Pro",
+          slug: "perplexity-pro",
+          excerpt: "We test Perplexity's conversational lookup engine and how it bypasses traditional search engine noise.",
+          content: `
+            <h2>The Search Engine Redefined</h2>
+            <p>Perplexity Pro is a conversational search engine that synthesizes reliable web resources into direct answers with inline citations. It aims to eliminate traditional search query advertisements and link-clutter.</p>
+            <h3>Multi-Model Versatility</h3>
+            <p>Subscribers get access to a selection of premier language models (such as Claude 3.5 Sonnet and GPT-4o), letting users choose the optimal engine for their specific research threads.</p>
+          `,
+          featured_image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&q=80&w=800",
+          category_id: "40000000-0000-0000-0000-000000000004",
+          overall_rating: 4.6,
+          scores: { performance: 9.0, value: 9.3, design: 9.2, easeOfUse: 9.2 },
+          pros: [
+            "Accurate inline citations for every synthesized assertion",
+            "Access to Claude 3.5 Sonnet and GPT-4o in one subscription",
+            "Copilot mode guides research with targeted follow-up questions",
+            "Clutter-free research summaries save search time"
+          ],
+          cons: [
+            "Can occasionally synthesize conflicting online sources",
+            "Relies on public pages (cannot parse paywalled content)"
+          ],
+          cta_links: [{ label: "Access Perplexity", url: "https://perplexity.ai" }],
+          compare_with: [],
+          status: "published"
+        },
+        {
           title: "GitHub Copilot",
-          slug: "github-copilot-review",
+          slug: "github-copilot",
           excerpt: "Is the grandfather of AI autocomplete still worth the investment for individual programmers?",
           content: `
             <h2>Seamless Autocomplete Integration</h2>
@@ -268,7 +324,7 @@ export async function POST(req: NextRequest) {
           `,
           featured_image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800",
           category_id: "10000000-0000-0000-0000-000000000001",
-          overall_rating: 8.5,
+          overall_rating: 4.3,
           scores: { performance: 8.8, value: 8.5, design: 8.0, easeOfUse: 8.8 },
           pros: [
             "Incredibly fast inline autocomplete prediction",

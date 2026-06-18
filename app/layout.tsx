@@ -4,6 +4,7 @@ import { AuthProvider } from "@/lib/context/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Chatbot from "@/components/Chatbot";
 import CompareTray from "@/components/CompareTray";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const lora = Lora({
@@ -49,6 +50,7 @@ export default function RootLayout({
             {children}
             <Chatbot />
             <CompareTray />
+            <Toaster />
           </ThemeProvider>
         </AuthProvider>
       </body>

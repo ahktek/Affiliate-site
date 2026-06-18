@@ -171,7 +171,7 @@ export async function GET(req: NextRequest) {
 
     (aiTools || []).forEach(t => {
       const clicks = affiliateCounts[t.id] || 0;
-      const url = `/reviews/${t.slug}-review`;
+      const url = `/reviews/${t.slug}`;
       const views = currentEvents.filter(e => e.type === "pageview" && e.url === url).length;
 
       topContentList.push({

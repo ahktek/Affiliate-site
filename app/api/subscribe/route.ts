@@ -4,12 +4,29 @@ import { supabaseAdmin } from "@/lib/supabase";
 
 
 export async function POST(req: NextRequest) {
+  let isJson = false;
   try {
     const resendApiKey = process.env.RESEND_API_KEY;
     const resend = resendApiKey ? new Resend(resendApiKey) : null;
-    const formData = await req.formData();
-    const email = (formData.get("email") as string || "").trim();
-    const source = (formData.get("source") as string) || "homepage";
+    
+    let email = "";
+    let name = "";
+    let source = "homepage";
+
+    const contentType = req.headers.get("content-type") || "";
+    isJson = contentType.includes("application/json") || req.nextUrl.searchParams.get("json") === "true";
+
+    if (contentType.includes("application/json")) {
+      const body = await req.json();
+      email = (body.email || "").trim();
+      name = (body.name || "").trim();
+      source = body.source || "homepage";
+    } else {
+      const formData = await req.formData();
+      email = (formData.get("email") as string || "").trim();
+      name = (formData.get("name") as string || "").trim();
+      source = (formData.get("source") as string) || "homepage";
+    }
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
@@ -27,6 +44,9 @@ export async function POST(req: NextRequest) {
     }
     
     if (existing) {
+      if (isJson) {
+        return NextResponse.json({ success: true, message: "Already subscribed" });
+      }
       // Redirect back with success (even if duplicate, don't leak info or just say success)
       return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
     }
@@ -34,7 +54,7 @@ export async function POST(req: NextRequest) {
     // Save to Supabase
     const { error } = await supabaseAdmin.from("subscribers").insert({
       email,
-      name: "", // Can capture name later if needed
+      name,
       source,
       timestamp: Date.now(),
       is_verified: false
@@ -43,6 +63,9 @@ export async function POST(req: NextRequest) {
     if (error) {
       // Handle Postgres unique constraint violation (code 23505) gracefully
       if (error.code === "23505") {
+        if (isJson) {
+          return NextResponse.json({ success: true, message: "Already subscribed" });
+        }
         return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
       }
       throw error;
@@ -67,6 +90,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    if (isJson) {
+      return NextResponse.json({ success: true });
+    }
     return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
   } catch (error: any) {
     console.error("Subscribe Error:", error);
@@ -76,6 +102,9 @@ export async function POST(req: NextRequest) {
       error.message?.includes("unique constraint") || 
       error.message?.includes("already exists")
     ) {
+      if (isJson) {
+        return NextResponse.json({ success: true, message: "Already subscribed" });
+      }
       return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
     }
     return NextResponse.json(

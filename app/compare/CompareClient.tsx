@@ -383,7 +383,7 @@ function CompareClientContent({ initialTools }: CompareClientProps) {
                         )}
                       </button>
                       <Link
-                        href={`/reviews/${tool.slug}-review`}
+                        href={`/reviews/${tool.slug}`}
                         className="font-sans text-xs font-semibold bg-secondary hover:bg-border/30 text-foreground border border-border px-4 py-2 rounded-[6px] text-center transition-colors"
                       >
                         Details
@@ -653,7 +653,7 @@ function CompareClientContent({ initialTools }: CompareClientProps) {
                       <td key={item.id} className="p-4">
                         <div className="flex flex-col gap-2">
                           <Link
-                            href={`/reviews/${item.slug}-review`}
+                            href={`/reviews/${item.slug}`}
                             className="bg-secondary hover:bg-border/30 text-foreground font-sans text-xs font-semibold py-2 px-3 rounded-[6px] text-center border border-border transition-all w-full"
                           >
                             Read Full Review
