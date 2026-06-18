@@ -79,3 +79,17 @@ export interface UserProfile {
   role: 'user' | 'admin';
   createdAt: number;
 }
+
+export interface Author {
+  id: string;
+  slug: string;
+  displayName: string;
+  title: string | null;
+  avatarUrl: string | null;
+  bio: string | null;
+  credentials: string | null;
+  twitterUrl: string | null;
+  linkedinUrl: string | null;
+  websiteUrl: string | null;
+  createdAt: number;
+}

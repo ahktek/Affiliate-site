@@ -10,6 +10,7 @@ import ScoreWidget from "@/components/ScoreWidget";
 import ProsConsWidget from "@/components/ProsConsWidget";
 import ComparisonTable from "@/components/ComparisonTable";
 import { ExternalLink, Star, ArrowLeft } from "lucide-react";
+import AuthorByline from "@/components/ui/AuthorByline";
 
 export const revalidate = 3600;
 
@@ -84,18 +85,20 @@ export default async function SingleReviewPage({ params }: { params: { slug: str
   let authorName = "Editorial Staff";
   let authorBio = "Senior product analyst covering AI software and productivity tools.";
   let authorAvatar = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80";
+  let authorSlug = "";
 
   if (review.authorId) {
     const { data: authorData } = await supabase
-      .from("profiles")
+      .from("authors")
       .select("*")
       .eq("id", review.authorId)
       .maybeSingle();
     
     if (authorData) {
-      authorName = authorData.display_name || authorData.email || "Editorial Staff";
+      authorName = authorData.display_name || "Editorial Staff";
       if (authorData.bio) authorBio = authorData.bio;
       if (authorData.avatar_url) authorAvatar = authorData.avatar_url;
+      authorSlug = authorData.slug;
     }
   }
 
@@ -153,7 +156,8 @@ export default async function SingleReviewPage({ params }: { params: { slug: str
       },
       "author": {
         "@type": "Person",
-        "name": authorName
+        "name": authorName,
+        "url": authorSlug ? `/author/${authorSlug}` : undefined
       }
     }
   };
@@ -202,7 +206,10 @@ export default async function SingleReviewPage({ params }: { params: { slug: str
 
             {/* Author + Date + Read Time Metadata Row */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 border-y border-border py-4 text-xs font-sans text-muted-foreground">
-              <span className="font-medium text-foreground">By {authorName}</span>
+              <div className="flex items-center gap-1">
+                <span className="text-muted-foreground">By</span>
+                <AuthorByline authorName={authorName} authorSlug={authorSlug} authorAvatar={authorAvatar} showAvatar={true} />
+              </div>
               <span className="font-mono text-border-emphasis select-none">|</span>
               <time dateTime={new Date(review.createdAt).toISOString()}>
                 {new Date(review.createdAt).toLocaleDateString("en-US", {
@@ -296,17 +303,36 @@ export default async function SingleReviewPage({ params }: { params: { slug: str
             {/* Author Block */}
             <div className="border-t border-border pt-8 mt-16 flex items-start gap-5">
               <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 bg-secondary border border-border">
-                <Image
-                  src={authorAvatar}
-                  alt={authorName}
-                  fill
-                  className="object-cover"
-                />
+                {authorSlug ? (
+                  <Link href={`/author/${authorSlug}`}>
+                    <Image
+                      src={authorAvatar}
+                      alt={authorName}
+                      fill
+                      sizes="64px"
+                      className="object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </Link>
+                ) : (
+                  <Image
+                    src={authorAvatar}
+                    alt={authorName}
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                  />
+                )}
               </div>
               <div className="space-y-2">
                 <div className="space-y-0.5">
                   <h4 className="font-display font-bold text-lg text-foreground leading-tight">
-                    {authorName}
+                    {authorSlug ? (
+                      <Link href={`/author/${authorSlug}`} className="hover:text-primary transition-colors duration-200">
+                        {authorName}
+                      </Link>
+                    ) : (
+                      authorName
+                    )}
                   </h4>
                   <span className="font-sans text-[0.7rem] uppercase tracking-wider text-muted-foreground block">
                     EDITORIAL CONTRIBUTOR
@@ -315,12 +341,18 @@ export default async function SingleReviewPage({ params }: { params: { slug: str
                 <p className="font-body text-xs text-muted-foreground leading-relaxed max-w-lg">
                   {authorBio}
                 </p>
-                <Link
-                  href="/reviews"
-                  className="inline-block font-sans text-xs font-semibold text-primary hover:text-accent-hover transition-colors"
-                >
-                  More from {authorName} →
-                </Link>
+                {authorSlug ? (
+                  <Link
+                    href={`/author/${authorSlug}`}
+                    className="inline-block font-sans text-xs font-semibold text-primary hover:text-accent-hover transition-colors duration-200"
+                  >
+                    More from {authorName} →
+                  </Link>
+                ) : (
+                  <span className="font-sans text-xs text-muted-foreground italic">
+                    Editorial Team
+                  </span>
+                )}
               </div>
             </div>
 
