@@ -37,24 +37,31 @@ export async function POST(req: NextRequest) {
 
     if (error) throw error;
 
-    // Send Welcome Email
+    // Send Welcome Email (Non-blocking)
     if (resend) {
-      await resend.emails.send({
-        from: "AI Reviews <hello@yourdomain.com>",
-        to: email,
-        subject: "Welcome to AI Reviews!",
-        html: `
-          <h1>Welcome to AI Reviews!</h1>
-          <p>Thanks for subscribing. You'll now receive our latest tool reviews, comparisons, and exclusive deals right in your inbox.</p>
-          <br/>
-          <p>Best regards,<br/>The AI Reviews Team</p>
-        `,
-      });
+      try {
+        await resend.emails.send({
+          from: "AI Reviews <hello@yourdomain.com>",
+          to: email,
+          subject: "Welcome to AI Reviews!",
+          html: `
+            <h1>Welcome to AI Reviews!</h1>
+            <p>Thanks for subscribing. You'll now receive our latest tool reviews, comparisons, and exclusive deals right in your inbox.</p>
+            <br/>
+            <p>Best regards,<br/>The AI Reviews Team</p>
+          `,
+        });
+      } catch (emailErr: any) {
+        console.error("Welcome email failed to send, but subscription succeeded:", emailErr);
+      }
     }
 
     return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
   } catch (error: any) {
     console.error("Subscribe Error:", error);
-    return NextResponse.json({ error: "Failed to subscribe" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to subscribe: " + (error.message || error.details || JSON.stringify(error)) },
+      { status: 500 }
+    );
   }
 }
