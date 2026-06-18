@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const resendApiKey = process.env.RESEND_API_KEY;
     const resend = resendApiKey ? new Resend(resendApiKey) : null;
     const formData = await req.formData();
-    const email = formData.get("email") as string;
+    const email = (formData.get("email") as string || "").trim();
     const source = (formData.get("source") as string) || "homepage";
 
     if (!email) {
@@ -16,11 +16,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if email already exists
-    const { data: existing } = await supabaseAdmin
+    const { data: existing, error: selectError } = await supabaseAdmin
       .from("subscribers")
       .select("id")
       .eq("email", email)
       .maybeSingle();
+    
+    if (selectError) {
+      console.error("Select subscriber check error:", selectError);
+    }
     
     if (existing) {
       // Redirect back with success (even if duplicate, don't leak info or just say success)
@@ -36,7 +40,13 @@ export async function POST(req: NextRequest) {
       is_verified: false
     });
 
-    if (error) throw error;
+    if (error) {
+      // Handle Postgres unique constraint violation (code 23505) gracefully
+      if (error.code === "23505") {
+        return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
+      }
+      throw error;
+    }
 
     // Send Welcome Email (Non-blocking)
     if (resend) {
@@ -60,6 +70,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
   } catch (error: any) {
     console.error("Subscribe Error:", error);
+    // Double-check duplicate error in catch block as safety net
+    if (
+      error.code === "23505" || 
+      error.message?.includes("unique constraint") || 
+      error.message?.includes("already exists")
+    ) {
+      return NextResponse.redirect(new URL("/?subscribed=true", req.url), { status: 303 });
+    }
     return NextResponse.json(
       { error: "Failed to subscribe: " + (error.message || error.details || JSON.stringify(error)) },
       { status: 500 }
