@@ -268,9 +268,9 @@ export default async function SingleReviewPage({ params }: { params: { slug: str
                 {review.ctaLinks.map((cta: any, i: number) => (
                   <a
                     key={i}
-                    href={cta.url}
+                    href={`/go/${review.slug}`}
                     target="_blank"
-                    rel="noopener noreferrer nofollow"
+                    rel="sponsored noopener"
                     className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-sans text-sm font-semibold px-6 py-3.5 rounded-[6px] hover:bg-accent-hover hover:translate-y-[-1px] transition-all duration-150 shadow-[0_4px_12px_rgba(200,80,42,0.18)]"
                   >
                     <span>{cta.label}</span>

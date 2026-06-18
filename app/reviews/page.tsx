@@ -123,9 +123,9 @@ export default async function ReviewsListingPage() {
                         Read Review
                       </Link>
                       <a
-                        href={mainCta.url}
+                        href={review.ctaLinks?.length > 0 ? `/go/${review.slug}` : `/reviews/${review.slug}`}
                         target="_blank"
-                        rel="noopener noreferrer nofollow"
+                        rel="sponsored noopener"
                         className="bg-primary text-primary-foreground font-sans text-xs font-semibold px-4 py-2 rounded-[6px] hover:bg-accent-hover hover:translate-y-[-1px] transition-all flex items-center gap-1.5 shadow-sm"
                       >
                         <span>{mainCta.label}</span>

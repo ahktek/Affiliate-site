@@ -310,9 +310,9 @@ export default function AIToolsClient({ initialTools }: AIToolsClientProps) {
                     {/* Official Site CTA */}
                     {tool.official_url && (
                       <a
-                        href={tool.affiliate_url || tool.official_url}
+                        href={`/go/${tool.slug}`}
                         target="_blank"
-                        rel="noopener noreferrer"
+                        rel="sponsored noopener"
                         className="flex-1 text-center font-sans text-xs font-semibold py-2.5 rounded-[4px] bg-[#C8502A] text-white hover:bg-[#A83E1F] transition-colors border border-transparent shadow-sm"
                       >
                         Visit Site

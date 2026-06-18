@@ -660,9 +660,9 @@ function CompareClientContent({ initialTools }: CompareClientProps) {
                           </Link>
                           {fullTool?.affiliate_url && (
                             <a
-                              href={fullTool.affiliate_url}
+                              href={`/go/${item.slug}`}
                               target="_blank"
-                              rel="noopener noreferrer"
+                              rel="sponsored noopener"
                               className="bg-primary hover:bg-accent-hover text-primary-foreground font-sans text-xs font-semibold py-2 px-3 rounded-[6px] text-center transition-all flex items-center justify-center gap-1.5 w-full shadow-sm"
                             >
                               <span>Official Site</span>
