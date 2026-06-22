@@ -199,6 +199,7 @@ export default function HeroSlider({ initialSlides }: HeroSliderProps) {
     delta: 50,
     preventScrollOnSwipe: true,
     trackTouch: true,
+    trackMouse: true,
   });
 
   const currentSlide = slides[currentIndex] || DEFAULT_SLIDES[0];
