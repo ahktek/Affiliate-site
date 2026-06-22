@@ -236,7 +236,7 @@ export default function HeroSlider({ initialSlides }: HeroSliderProps) {
       tabIndex={0}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="relative w-full h-[100svh] md:h-[70vh] md:min-h-[460px] lg:h-[92vh] lg:min-h-[560px] lg:max-h-[780px] bg-zinc-950 overflow-hidden focus:outline-none select-none"
+      className="relative w-full h-[55svh] min-h-[400px] md:h-[70vh] md:min-h-[460px] lg:h-[92vh] lg:min-h-[560px] lg:max-h-[780px] bg-zinc-950 overflow-hidden focus:outline-none select-none"
       role="region"
       aria-label="Featured content slider"
     >

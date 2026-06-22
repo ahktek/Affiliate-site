@@ -35,21 +35,21 @@ export default function SlideEditorial({ data, isActive }: SlideProps) {
           className="hidden md:block w-[2px] bg-[#C8502A] h-full absolute right-0 top-0 z-20"
         />
         
-        <div className="w-full max-w-[480px] mx-auto px-5 md:px-10 py-6 md:py-16 flex flex-col justify-center h-full">
+        <div className="w-full max-w-[480px] mx-auto px-5 md:px-10 py-3 md:py-16 flex flex-col justify-center h-full">
           {/* Tagline */}
-          <div className="flex flex-col items-start mb-4">
+          <div className="flex flex-col items-start mb-2 md:mb-4">
             <motion.div
               initial={{ scaleX: 0 }}
               animate={isActive ? { scaleX: 1 } : { scaleX: 0 }}
               transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
               style={{ originX: 0 }}
-              className="w-[20px] h-[1px] bg-[#C8502A] mb-2"
+              className="w-[20px] h-[1px] bg-[#C8502A] mb-1.5 md:mb-2"
             />
             <motion.span
               initial={{ opacity: 0, x: -10 }}
               animate={isActive ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
-              className="font-sans text-[11px] font-semibold uppercase tracking-[0.1em] text-[#C8502A]"
+              className="font-sans text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.1em] text-[#C8502A]"
             >
               {tag}
             </motion.span>
@@ -57,10 +57,10 @@ export default function SlideEditorial({ data, isActive }: SlideProps) {
 
           {/* Headline */}
           <h2
-            className={`font-display font-bold leading-[1.15] text-[#1A1A18] tracking-tight mb-4 flex flex-wrap ${
+            className={`font-display font-bold leading-[1.15] text-[#1A1A18] tracking-tight mb-2 md:mb-4 flex flex-wrap ${
               isHeadlineLong 
-                ? "text-[1.8rem] sm:text-[2.2rem] md:text-[2.25rem] lg:text-[2.5rem]" 
-                : "text-[2rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.25rem]"
+                ? "text-[1.3rem] sm:text-[1.8rem] md:text-[2.25rem] lg:text-[2.5rem]" 
+                : "text-[1.5rem] sm:text-[2rem] md:text-[3rem] lg:text-[3.25rem]"
             }`}
           >
             {headlineWords.map((word, idx) => (
@@ -86,7 +86,7 @@ export default function SlideEditorial({ data, isActive }: SlideProps) {
             initial={{ opacity: 0 }}
             animate={isActive ? { opacity: 1 } : {}}
             transition={{ duration: 0.5, delay: 0.55, ease: "easeOut" }}
-            className="font-serif text-[1.0625rem] leading-[1.7] text-[#6B6B63] mb-6 max-w-full"
+            className="font-serif text-[0.875rem] md:text-[1.0625rem] leading-[1.6] md:leading-[1.7] text-[#6B6B63] mb-3 md:mb-6 max-w-full"
             style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
           >
             {subline}
@@ -97,12 +97,12 @@ export default function SlideEditorial({ data, isActive }: SlideProps) {
             initial={{ opacity: 0 }}
             animate={isActive ? { opacity: 1 } : {}}
             transition={{ duration: 0.5, delay: 0.7, ease: "easeOut" }}
-            className="flex items-center gap-6"
+            className="flex items-center gap-4 md:gap-6"
           >
             {/* Primary CTA */}
             <Link
               href={ctaPrimaryUrl}
-              className="inline-block bg-[#C8502A] text-white font-sans text-[13px] font-medium tracking-[0.03em] px-6 py-3 rounded-[4px] border border-transparent shadow-sm hover:bg-[#A83E1F] hover:translate-y-[-1px] hover:shadow-[0_4px_16px_rgba(200,80,42,0.25)] transition-all duration-180 ease-out"
+              className="inline-block bg-[#C8502A] text-white font-sans text-[12px] md:text-[13px] font-medium tracking-[0.03em] px-4 py-2 md:px-6 md:py-3 rounded-[4px] border border-transparent shadow-sm hover:bg-[#A83E1F] hover:translate-y-[-1px] hover:shadow-[0_4px_16px_rgba(200,80,42,0.25)] transition-all duration-180 ease-out"
             >
               {ctaPrimaryText}
             </Link>
@@ -111,7 +111,7 @@ export default function SlideEditorial({ data, isActive }: SlideProps) {
             {ctaSecondaryText && ctaSecondaryUrl && (
               <Link
                 href={ctaSecondaryUrl}
-                className="group inline-flex items-center text-[#1A1A18] font-sans text-[13px] font-medium hover:underline decoration-1 underline-offset-2 transition-colors duration-180"
+                className="group inline-flex items-center text-[#1A1A18] font-sans text-[12px] md:text-[13px] font-medium hover:underline decoration-1 underline-offset-2 transition-colors duration-180"
               >
                 <span>{ctaSecondaryText}</span>
                 <span className="ml-1 transform group-hover:translate-x-1 transition-transform duration-180">

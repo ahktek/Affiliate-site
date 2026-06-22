@@ -72,7 +72,7 @@ export default function SlideTypographic({ data, isActive }: SlideProps) {
       </div>
 
       {/* Text Content Container */}
-      <div className="relative z-10 flex-1 flex flex-col justify-start pt-[12vh] md:pt-[18vh] px-6 md:pl-24 lg:pl-32 pr-6 max-w-[1280px] w-full mx-auto">
+      <div className="relative z-10 flex-1 flex flex-col justify-start pt-10 md:pt-[18vh] px-6 md:pl-24 lg:pl-32 pr-6 max-w-[1280px] w-full mx-auto">
         <div className="w-full md:w-[65%] lg:w-[60%] relative">
           
           {/* Large Ghost Number "03" */}
@@ -84,26 +84,26 @@ export default function SlideTypographic({ data, isActive }: SlideProps) {
           </div>
 
           {/* Tagline */}
-          <div className="flex flex-col items-start mb-5 relative z-10">
+          <div className="flex flex-col items-start mb-3 md:mb-5 relative z-10">
             <motion.div
               initial={{ scaleX: 0 }}
               animate={isActive ? { scaleX: 1 } : { scaleX: 0 }}
               transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
               style={{ originX: 0 }}
-              className="w-[40px] h-[1px] bg-[#C8502A] mb-3"
+              className="w-[40px] h-[1px] bg-[#C8502A] mb-2 md:mb-3"
             />
             <motion.span
               initial={{ opacity: 0 }}
               animate={isActive ? { opacity: 1 } : {}}
               transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
-              className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#FAFAF7]/55"
+              className="font-sans text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.14em] text-[#FAFAF7]/55"
             >
               {tag}
             </motion.span>
           </div>
 
           {/* Headline (focus blur reveal, Lora 400 with styled "5") */}
-          <h2 className="font-display font-normal text-[1.8rem] sm:text-[2.2rem] md:text-[2.75rem] lg:text-[3rem] leading-[1.25] text-[#FAFAF7] tracking-[-0.01em] mb-5 relative z-10">
+          <h2 className="font-display font-normal text-[1.5rem] sm:text-[2rem] md:text-[2.75rem] lg:text-[3rem] leading-[1.25] text-[#FAFAF7] tracking-[-0.01em] mb-3 md:mb-5 relative z-10">
             {words.map((word, idx) => {
               const isFive = word.includes("5");
               return (
@@ -132,7 +132,7 @@ export default function SlideTypographic({ data, isActive }: SlideProps) {
             initial={{ opacity: 0 }}
             animate={isActive ? { opacity: 1 } : {}}
             transition={{ duration: 0.5, delay: 0.7, ease: "easeOut" }}
-            className="font-serif italic text-[1rem] leading-[1.6] text-[#FAFAF7]/60 mb-8 max-w-[480px] relative z-10"
+            className="font-serif italic text-[0.875rem] md:text-[1rem] leading-[1.5] md:leading-[1.6] text-[#FAFAF7]/60 mb-5 md:mb-8 max-w-[480px] relative z-10"
             style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
           >
             {subline}
@@ -143,17 +143,17 @@ export default function SlideTypographic({ data, isActive }: SlideProps) {
             initial={{ opacity: 0, y: 16 }}
             animate={isActive ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.85, ease: "easeOut" }}
-            className="flex items-center gap-6 relative z-10"
+            className="flex items-center gap-4 md:gap-6 relative z-10"
           >
             {/* Primary Circle-Arrow Button */}
             <Link
               href={ctaPrimaryUrl}
-              className="group inline-flex items-center gap-3 text-[#FAFAF7] font-sans text-[14px] font-medium"
+              className="group inline-flex items-center gap-2.5 md:gap-3 text-[#FAFAF7] font-sans text-[13px] md:text-[14px] font-medium"
             >
               <span>{ctaPrimaryText}</span>
-              <span className="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center group-hover:bg-[#C8502A] group-hover:border-[#C8502A] transition-all duration-200">
+              <span className="w-7 h-7 md:w-8 md:h-8 rounded-full border border-white/40 flex items-center justify-center group-hover:bg-[#C8502A] group-hover:border-[#C8502A] transition-all duration-200">
                 <svg
-                  className="w-3.5 h-3.5 text-white transform group-hover:translate-x-[1px] transition-transform"
+                  className="w-3 h-3 md:w-3.5 md:h-3.5 text-white transform group-hover:translate-x-[1px] transition-transform"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -172,7 +172,7 @@ export default function SlideTypographic({ data, isActive }: SlideProps) {
             {ctaSecondaryText && ctaSecondaryUrl && (
               <Link
                 href={ctaSecondaryUrl}
-                className="inline-block text-[#FAFAF7]/50 hover:text-[#FAFAF7]/90 font-sans text-[12px] hover:underline decoration-1 underline-offset-2 transition-colors duration-200"
+                className="inline-block text-[#FAFAF7]/50 hover:text-[#FAFAF7]/90 font-sans text-[11px] md:text-[12px] hover:underline decoration-1 underline-offset-2 transition-colors duration-200"
               >
                 {ctaSecondaryText}
               </Link>

@@ -68,7 +68,7 @@ export default function SlideDarkCover({ data, isActive }: SlideProps) {
       </div>
 
       {/* Main Text Content */}
-      <div className="relative z-10 flex-1 flex flex-col justify-start pt-[14vh] md:pt-[18vh] px-5 md:px-[10%] max-w-[1280px] w-full mx-auto">
+      <div className="relative z-10 flex-1 flex flex-col justify-start pt-10 md:pt-[18vh] px-5 md:px-[10%] max-w-[1280px] w-full mx-auto">
         <div className="max-w-[580px] relative">
           {/* Large Ghost Number "40+" */}
           <div
@@ -83,15 +83,15 @@ export default function SlideDarkCover({ data, isActive }: SlideProps) {
             initial={{ scale: 0.92, opacity: 0 }}
             animate={isActive ? { scale: 1.0, opacity: 1 } : {}}
             transition={{ duration: 0.3, delay: 0.15, ease: "easeOut" }}
-            className="inline-block bg-white/10 border border-white/20 px-3.5 py-1.5 rounded-[4px] mb-5 relative z-10"
+            className="inline-block bg-white/10 border border-white/20 px-3 py-1 md:px-3.5 md:py-1.5 rounded-[4px] mb-3 md:mb-5 relative z-10"
           >
-            <span className="font-sans text-[12px] font-semibold uppercase tracking-[0.1em] text-white/90">
+            <span className="font-sans text-[11px] md:text-[12px] font-semibold uppercase tracking-[0.1em] text-white/90">
               {tag}
             </span>
           </motion.div>
 
           {/* Headline with clipPath animations line by line */}
-          <h2 className="font-display font-bold text-[2rem] sm:text-[2.5rem] md:text-[3.25rem] lg:text-[3.5rem] leading-[1.1] text-white tracking-tight mb-5 relative z-10">
+          <h2 className="font-display font-bold text-[1.6rem] sm:text-[2.2rem] md:text-[3.25rem] lg:text-[3.5rem] leading-[1.15] md:leading-[1.1] text-white tracking-tight mb-3 md:mb-5 relative z-10">
             {lines.map((line, idx) => (
               <span
                 key={idx}
@@ -119,7 +119,7 @@ export default function SlideDarkCover({ data, isActive }: SlideProps) {
             initial={{ opacity: 0, x: -8 }}
             animate={isActive ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.65, ease: "easeOut" }}
-            className="font-serif text-[1.0625rem] leading-[1.6] text-white/70 mb-8 max-w-[480px] relative z-10"
+            className="font-serif text-[0.875rem] md:text-[1.0625rem] leading-[1.5] md:leading-[1.6] text-white/70 mb-5 md:mb-8 max-w-[480px] relative z-10"
             style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
           >
             {subline}
@@ -130,12 +130,12 @@ export default function SlideDarkCover({ data, isActive }: SlideProps) {
             initial={{ opacity: 0, y: 10 }}
             animate={isActive ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.8, ease: "easeOut" }}
-            className="flex items-center gap-6 relative z-10"
+            className="flex items-center gap-4 md:gap-6 relative z-10"
           >
             {/* Outline Primary Button */}
             <Link
               href={ctaPrimaryUrl}
-              className="inline-block bg-transparent text-white font-sans text-[13px] font-medium tracking-[0.03em] px-7 py-3.5 rounded-[3px] border-[1.5px] border-white hover:bg-white hover:text-[#0A0A09] transition-colors duration-200"
+              className="inline-block bg-transparent text-white font-sans text-[12px] md:text-[13px] font-medium tracking-[0.03em] px-5 py-2.5 md:px-7 md:py-3.5 rounded-[3px] border-[1.5px] border-white hover:bg-white hover:text-[#0A0A09] transition-colors duration-200"
             >
               {ctaPrimaryText}
             </Link>
@@ -144,7 +144,7 @@ export default function SlideDarkCover({ data, isActive }: SlideProps) {
             {ctaSecondaryText && ctaSecondaryUrl && (
               <Link
                 href={ctaSecondaryUrl}
-                className="group inline-flex items-center text-white/65 hover:text-white font-sans text-[13px] font-medium border-b border-white/30 hover:border-white transition-all duration-200 pb-0.5"
+                className="group inline-flex items-center text-white/65 hover:text-white font-sans text-[12px] md:text-[13px] font-medium border-b border-white/30 hover:border-white transition-all duration-200 pb-0.5"
               >
                 <span>{ctaSecondaryText}</span>
                 <span className="ml-1 transform group-hover:translate-x-1 transition-transform duration-200">
