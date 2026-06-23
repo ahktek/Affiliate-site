@@ -362,6 +362,7 @@ export default function HomepageSettings() {
                               <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
+                                style={provided.draggableProps.style as any}
                                 className="flex items-center justify-between border border-border p-3 rounded-[6px] bg-secondary/20 hover:bg-secondary/40 transition-colors"
                               >
                                 <div className="flex items-center gap-2.5 min-w-0">
