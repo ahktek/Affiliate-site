@@ -320,6 +320,7 @@ export default function HeroSlidesManager() {
                               <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
+                                style={provided.draggableProps.style as any}
                                 className={`flex items-center gap-3 bg-secondary/40 border p-3 rounded-[6px] transition-all hover:bg-secondary/60 ${
                                   selectedSlide?.id === slide.id ? "border-primary" : "border-border"
                                 }`}
