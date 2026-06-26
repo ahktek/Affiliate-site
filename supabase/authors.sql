@@ -67,7 +67,7 @@ begin
     values (
       new.id,
       coalesce(nullif(lower(regexp_replace(new.display_name, '[^a-zA-Z0-9]+', '-', 'g')), ''), split_part(new.email, '@', 1)),
-      coalesce(new.display_name, 'Chronicle Contributor'),
+      coalesce(new.display_name, 'Optura Vibe Contributor'),
       case when new.role = 'admin' then 'Senior Editor' else 'Staff Writer' end,
       new.avatar_url,
       new.bio
@@ -95,8 +95,8 @@ values (
   '11111111-1111-1111-1111-111111111111',
   'editorial-staff',
   'Editorial Staff',
-  'Chronicle Staff',
-  'Chronicle''s dedicated team of writers, product analysts, and editors.',
+  'Optura Vibe Staff',
+  'Optura Vibe''s dedicated team of writers, product analysts, and editors.',
   'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80'
 )
 on conflict (id) do update set
@@ -109,7 +109,7 @@ insert into public.authors (id, slug, display_name, title, avatar_url, bio)
 select 
   id,
   coalesce(nullif(lower(regexp_replace(display_name, '[^a-zA-Z0-9]+', '-', 'g')), ''), split_part(email, '@', 1)),
-  coalesce(display_name, 'Chronicle Contributor'),
+  coalesce(display_name, 'Optura Vibe Contributor'),
   case when role = 'admin' then 'Senior Editor' else 'Staff Writer' end,
   avatar_url,
   bio

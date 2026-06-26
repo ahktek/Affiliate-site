@@ -48,9 +48,9 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
   }
 });
 
-const adminEmail = 'admin@chronicle.com';
-const adminPassword = 'ChronicleAdmin123';
-const adminName = 'Chronicle Editor';
+const adminEmail = 'admin@opturavibe.com';
+const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'OpturaVibeAdmin123';
+const adminName = 'Optura Vibe Editor';
 
 async function createAdmin() {
   console.log(`Creating Admin User: ${adminEmail}...`);

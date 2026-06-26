@@ -456,7 +456,7 @@ export default function AIToolForm({ toolId, initialData }: AIToolFormProps) {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="affiliateUrl">Affiliate URL (with UTM params)</Label>
-                  <Input id="affiliateUrl" type="url" value={affiliateUrl} onChange={(e) => setAffiliateUrl(e.target.value)} placeholder="https://claude.ai?utm_source=chronicle" />
+                  <Input id="affiliateUrl" type="url" value={affiliateUrl} onChange={(e) => setAffiliateUrl(e.target.value)} placeholder="https://claude.ai?utm_source=optura_vibe" />
                 </div>
               </div>
 
