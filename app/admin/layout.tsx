@@ -64,7 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="w-64 bg-[#1A1A18] text-white/95 border-r border-[#2E2E2A] flex flex-col font-sans">
         <div className="h-16 flex items-center px-6 border-b border-[#2E2E2A]">
           <span className="text-lg font-bold font-display tracking-tight text-white select-none">
-            CHRONICLE ADMIN
+            OPTURA VIBE ADMIN
           </span>
         </div>
         <nav className="flex-1 p-4 space-y-1">

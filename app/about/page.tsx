@@ -3,8 +3,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata = {
-  title: "About Us | Editorial Rigor & Software Reviews | Chronicle",
-  description: "Learn about Chronicle's mission, our hands-on testing standards, our team of developers and writers, and our commitment to editorial independence.",
+  title: "About Us | Editorial Rigor & Software Reviews | Optura Vibe",
+  description: "Learn about Optura Vibe's mission, our hands-on testing standards, our team of developers and writers, and our commitment to editorial independence.",
 };
 
 export default function AboutPage() {
@@ -19,7 +19,7 @@ export default function AboutPage() {
             EDITORIAL MANIFESTO
           </span>
           <h1 className="font-display font-bold text-3xl md:text-5xl leading-tight text-foreground">
-            About Chronicle
+            About Optura Vibe
           </h1>
           <p className="font-serif italic text-lg md:text-xl text-muted-foreground leading-relaxed">
             &ldquo;We did the research so you don't have to.&rdquo;
@@ -34,7 +34,7 @@ export default function AboutPage() {
         {/* Article Content Area */}
         <article className="space-y-8 font-serif text-[1.0625rem] leading-[1.78] text-[#1A1A18] dark:text-zinc-300">
           <p>
-            Chronicle was founded in 2024 out of frustration with the state of software reviews online. 
+            Optura Vibe was founded in 2024 out of frustration with the state of software reviews online. 
             The internet is flooded with low-quality content, sponsored listicles, and search-optimized 
             summaries created by writers who have never opened the products they review.
           </p>

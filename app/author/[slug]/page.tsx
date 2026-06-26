@@ -36,13 +36,13 @@ export async function generateMetadata({ params }: AuthorPageProps) {
 
   if (!author) {
     return {
-      title: "Author Not Found | Chronicle",
+      title: "Author Not Found | Optura Vibe",
     };
   }
 
   return {
-    title: `${author.display_name} - ${author.title || "Contributor"} | Chronicle`,
-    description: author.bio || `Read articles and reviews written by ${author.display_name} on Chronicle.`,
+    title: `${author.display_name} - ${author.title || "Contributor"} | Optura Vibe`,
+    description: author.bio || `Read articles and reviews written by ${author.display_name} on Optura Vibe.`,
   };
 }
 
@@ -123,19 +123,19 @@ export default async function AuthorProfilePage({ params }: AuthorPageProps) {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://chronicle.com"
+        "item": "https://opturavibe.com"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Authors",
-        "item": "https://chronicle.com/authors"
+        "item": "https://opturavibe.com/authors"
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": author.display_name,
-        "item": `https://chronicle.com/author/${author.slug}`
+        "item": `https://opturavibe.com/author/${author.slug}`
       }
     ]
   };

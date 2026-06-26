@@ -3,10 +3,10 @@ import { supabase } from "./supabase";
 // Get or generate a persistent session ID for the user
 const getSessionId = (): string => {
   if (typeof window === "undefined") return "";
-  let sessionId = localStorage.getItem("chronicle_session_id");
+  let sessionId = localStorage.getItem("optura_vibe_session_id");
   if (!sessionId) {
     sessionId = "sess_" + Math.random().toString(36).substring(2, 15) + "_" + Date.now();
-    localStorage.setItem("chronicle_session_id", sessionId);
+    localStorage.setItem("optura_vibe_session_id", sessionId);
   }
   return sessionId;
 };

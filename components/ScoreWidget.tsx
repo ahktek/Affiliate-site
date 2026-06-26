@@ -103,7 +103,7 @@ export default function ScoreWidget({ overallScore, subScores, productName }: Sc
         {/* Right Side: Score breakdown bars */}
         <div className="flex-1 w-full space-y-4">
           <h4 className="font-display font-medium text-lg text-foreground border-b border-border pb-2">
-            Chronicle Scorecard
+            Optura Vibe Scorecard
           </h4>
           <div className="space-y-3.5">
             {subScoreItems.map((item, idx) => (

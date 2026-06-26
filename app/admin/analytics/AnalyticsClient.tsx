@@ -129,7 +129,7 @@ export default function AnalyticsClient() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `chronicle_analytics_${days}_days.csv`);
+    link.setAttribute("download", `optura_vibe_analytics_${days}_days.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

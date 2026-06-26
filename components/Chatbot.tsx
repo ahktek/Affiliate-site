@@ -28,7 +28,7 @@ export default function Chatbot() {
       setMessages([
         { 
           role: "assistant", 
-          content: "Welcome to Chronicle. I'm your editorial research assistant. Ask me anything about the software and AI tools we've analyzed today." 
+          content: "Welcome to Optura Vibe. I'm your editorial research assistant. Ask me anything about the software and AI tools we've analyzed today." 
         }
       ]);
     }
@@ -97,7 +97,7 @@ export default function Chatbot() {
           <CardHeader className="p-4 border-b border-border bg-[#1A1A18] text-white flex flex-row items-center justify-between rounded-t-[5px]">
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5 text-primary" />
-              <CardTitle className="text-sm font-display font-medium tracking-tight">Chronicle Assistant</CardTitle>
+              <CardTitle className="text-sm font-display font-medium tracking-tight">Optura Vibe Assistant</CardTitle>
             </div>
             <button
               onClick={() => setIsOpen(false)}

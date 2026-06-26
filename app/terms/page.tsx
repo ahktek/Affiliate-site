@@ -3,8 +3,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata = {
-  title: "Terms of Service | Chronicle",
-  description: "Read Chronicle's terms of service, affiliate disclosure, and website usage policies.",
+  title: "Terms of Service | Optura Vibe",
+  description: "Read Optura Vibe's terms of service, affiliate disclosure, and website usage policies.",
 };
 
 export default function TermsOfServicePage() {
@@ -29,7 +29,7 @@ export default function TermsOfServicePage() {
         {/* Content */}
         <article className="space-y-6 font-serif text-[1.0625rem] leading-[1.78] text-[#1A1A18] dark:text-zinc-300">
           <p>
-            Welcome to Chronicle. By accessing or using our website located at ahktek.com (the &ldquo;Site&rdquo;), you agree to comply with and be bound by the following terms and conditions (the &ldquo;Terms&rdquo;).
+            Welcome to Optura Vibe. By accessing or using our website located at ahktek.com (the &ldquo;Site&rdquo;), you agree to comply with and be bound by the following terms and conditions (the &ldquo;Terms&rdquo;).
           </p>
 
           <h2 className="font-display font-semibold text-xl text-foreground pt-3 leading-snug">
@@ -60,7 +60,7 @@ export default function TermsOfServicePage() {
             4. Limitation of Liability
           </h2>
           <p>
-            In no event shall Chronicle or its owners be liable for any direct, indirect, incidental, or consequential damages resulting from your use of the Site, including business interruption, financial loss, or software configuration errors.
+            In no event shall Optura Vibe or its owners be liable for any direct, indirect, incidental, or consequential damages resulting from your use of the Site, including business interruption, financial loss, or software configuration errors.
           </p>
 
           <h2 className="font-display font-semibold text-xl text-foreground pt-3 leading-snug">

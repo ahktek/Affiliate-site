@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
   
   return {
-    title: `${data.meta_title || data.title} | Chronicle`,
+    title: `${data.meta_title || data.title} | Optura Vibe`,
     description: data.meta_description || data.excerpt,
   };
 }

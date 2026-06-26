@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!data) return { title: "Review Not Found" };
   
   return {
-    title: `${data.meta_title || data.title} Review (${new Date().getFullYear()}) | Chronicle`,
+    title: `${data.meta_title || data.title} Review (${new Date().getFullYear()}) | Optura Vibe`,
     description: data.meta_description || data.excerpt,
   };
 }

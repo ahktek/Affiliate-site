@@ -7,7 +7,7 @@ import AIToolsClient from "./AIToolsClient";
 export const revalidate = 600; // Cache for 10 minutes
 
 export const metadata = {
-  title: "AI Tools Directory | Hand-Tested Reviews & Ratings | Chronicle",
+  title: "AI Tools Directory | Hand-Tested Reviews & Ratings | Optura Vibe",
   description: "Browse our database of the best AI tools for coding, writing, image generation, research, and video editing, complete with performance scores and direct specs.",
 };
 

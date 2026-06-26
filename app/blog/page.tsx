@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Blog | AI Tools & SaaS Insights | Chronicle",
+  title: "Blog | AI Tools & SaaS Insights | Optura Vibe",
   description: "Read our latest articles on AI tools, SEO software, and digital marketing strategies.",
 };
 
@@ -47,7 +47,7 @@ export default async function BlogListingPage() {
             EDITORIAL LOG
           </span>
           <h1 className="font-display font-bold text-3xl md:text-5xl leading-tight text-foreground">
-            The Chronicle Blog
+            The Optura Vibe Blog
           </h1>
           <p className="font-body text-lg text-muted-foreground leading-relaxed">
             In-depth guides, industry analyses, and strategic columns written by editors who test software.

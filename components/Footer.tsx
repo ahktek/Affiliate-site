@@ -35,7 +35,7 @@ export default function Footer() {
           {/* Logo and About Section (6 cols) */}
           <div className="md:col-span-6 space-y-6">
             <Link href="/" className="font-display font-bold text-2xl tracking-tight text-foreground select-none">
-              CHRONICLE
+              OPTURA VIBE
             </Link>
             <p className="font-body text-sm text-muted-foreground max-w-md leading-relaxed">
               We conduct thorough, independent, and research-oriented reviews of AI tools, SaaS platforms, and digital products. 
@@ -97,13 +97,13 @@ export default function Footer() {
               Affiliate Disclosure
             </span>
             <p className="font-body text-xs text-muted-foreground leading-relaxed">
-              Chronicle is reader-supported. When you buy through links on our site, we may earn an affiliate commission at no additional cost to you. 
+              Optura Vibe is reader-supported. When you buy through links on our site, we may earn an affiliate commission at no additional cost to you. 
               This support helps fund our independent research, product testing, and editorial integrity. Our reviews are based solely on our editors' hands-on experience and data-driven analysis.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground font-sans pt-2">
-            <p>© {currentYear} Chronicle. All rights reserved.</p>
+            <p>© {currentYear} Optura Vibe. All rights reserved.</p>
             <p className="mt-2 sm:mt-0">
               Designed with Warm Editorial Precision.
             </p>

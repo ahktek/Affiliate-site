@@ -696,7 +696,7 @@ export default function HomePageClient({
                 EDITORIAL INSIGHTS
               </span>
               <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground">
-                Latest from the Chronicle
+                Latest from the Optura Vibe
               </h2>
             </div>
             <Link

@@ -97,7 +97,7 @@ export default function Navbar() {
         <div className="max-w-[1280px] mx-auto px-6 md:px-20 h-20 flex items-center justify-between">
           {/* Logo - Typography wordmark in Lora 700 */}
           <Link href="/" className="font-display font-bold text-2xl tracking-tight text-foreground max-w-[150px] select-none hover:opacity-90 transition-opacity">
-            CHRONICLE
+            OPTURA VIBE
           </Link>
 
           {/* Desktop Nav Items - Instrument Sans */}

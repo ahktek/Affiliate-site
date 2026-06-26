@@ -8,7 +8,7 @@ import { Star, ExternalLink, ArrowRight } from "lucide-react";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Product Reviews | AI Tools & SaaS | Chronicle",
+  title: "Product Reviews | AI Tools & SaaS | Optura Vibe",
   description: "Read our comprehensive, hands-on reviews of the top AI tools and SaaS products.",
 };
 

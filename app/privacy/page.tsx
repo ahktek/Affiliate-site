@@ -3,8 +3,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata = {
-  title: "Privacy Policy | Chronicle",
-  description: "Read Chronicle's policies on cookies, newsletter registration, analytics tracking, and data security.",
+  title: "Privacy Policy | Optura Vibe",
+  description: "Read Optura Vibe's policies on cookies, newsletter registration, analytics tracking, and data security.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -29,7 +29,7 @@ export default function PrivacyPolicyPage() {
         {/* Content */}
         <article className="space-y-6 font-serif text-[1.0625rem] leading-[1.78] text-[#1A1A18] dark:text-zinc-300">
           <p>
-            At Chronicle (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;), we respect your privacy and are committed to protecting it. This Privacy Policy describes how we collect, use, and share information when you visit our website located at ahktek.com (the &ldquo;Site&rdquo;).
+            At Optura Vibe (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;), we respect your privacy and are committed to protecting it. This Privacy Policy describes how we collect, use, and share information when you visit our website located at ahktek.com (the &ldquo;Site&rdquo;).
           </p>
 
           <h2 className="font-display font-semibold text-xl text-foreground pt-3 leading-snug">

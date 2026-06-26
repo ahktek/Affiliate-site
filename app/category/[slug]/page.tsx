@@ -37,12 +37,12 @@ export async function generateMetadata({ params }: CategoryPageProps) {
 
   if (!category) {
     return {
-      title: "Category Not Found | Chronicle",
+      title: "Category Not Found | Optura Vibe",
     };
   }
 
   return {
-    title: `Best ${category.name} of ${new Date().getFullYear()} | Chronicle`,
+    title: `Best ${category.name} of ${new Date().getFullYear()} | Optura Vibe`,
     description: category.description || `Read expert reviews and detailed matchups for the top ${category.name}.`,
   };
 }
@@ -129,19 +129,19 @@ export default async function CategoryLandingPage({ params }: CategoryPageProps)
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://chronicle.com"
+        "item": "https://opturavibe.com"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Categories",
-        "item": "https://chronicle.com/reviews"
+        "item": "https://opturavibe.com/reviews"
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": category.name,
-        "item": `https://chronicle.com/category/${category.slug}`
+        "item": `https://opturavibe.com/category/${category.slug}`
       }
     ]
   };
@@ -152,7 +152,7 @@ export default async function CategoryLandingPage({ params }: CategoryPageProps)
     "@type": "CollectionPage",
     "name": `Top ${category.name} Matchups & Reviews`,
     "description": category.description || "",
-    "url": `https://chronicle.com/category/${category.slug}`,
+    "url": `https://opturavibe.com/category/${category.slug}`,
     "about": {
       "@type": "Thing",
       "name": category.name
@@ -162,7 +162,7 @@ export default async function CategoryLandingPage({ params }: CategoryPageProps)
       "itemListElement": reviews.map((r, index) => ({
         "@type": "ListItem",
         "position": index + 1,
-        "url": `https://chronicle.com/reviews/${r.slug}`
+        "url": `https://opturavibe.com/reviews/${r.slug}`
       }))
     }
   };
